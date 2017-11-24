@@ -30,12 +30,13 @@ public class RecommendAppProxy {
 
     public RecommendAppProxy(Context context) {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        mRecommendAppDao = AppDatabase.getInstance(context).recommendAppDao();
+        mRecommendAppDao = RecommendDatabase.getInstance(context).recommendAppDao();
     }
 
     public Observable<List<RecommendApp>> getLocalRecommendApps() {
         return Observable
                 .create((ObservableEmitter<List<RecommendApp>> e) -> {
+                    Log.e("RecommendAppProxy", "getLocalRecommendApps: mRecommendAppDao=" + mRecommendAppDao);
                     List<RecommendApp> recommendApps = mRecommendAppDao.getRecommendApps();
                     if (recommendApps != null && recommendApps.size() > 0) {
                         hasRecommendApps = true;
