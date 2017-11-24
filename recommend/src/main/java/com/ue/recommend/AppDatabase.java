@@ -35,7 +35,10 @@ public abstract class AppDatabase extends RoomDatabase {
         if (instance == null) {
             synchronized (AppDatabase.class) {
                 if (instance == null) {
-                    instance = Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, "blueLightFilter.db")
+                    String packageName = context.getPackageName();
+                    int startIndex = packageName.lastIndexOf(".") + 1;
+                    String dbName = packageName.substring(startIndex) + ".db";
+                    instance = Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, dbName)
                             .fallbackToDestructiveMigration()//更新版本之后清空数据库
                             //.addMigrations(MIGRATION_1_2, MIGRATION_2_3)//版本迁移
                             .build();
