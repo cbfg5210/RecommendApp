@@ -43,8 +43,6 @@
             android:orientation="vertical"
             android:overScrollMode="never"
             android:paddingBottom="10dp"
-            android:paddingLeft="15dp"
-            android:paddingRight="15dp"
             android:paddingTop="5dp"
             android:scrollbars="none"
             app:layoutManager="android.support.v7.widget.LinearLayoutManager"
