@@ -30,12 +30,9 @@ class RecommendAppDelegate extends BaseAdapterDelegate<Item> {
     @Override
     protected RecyclerView.ViewHolder onCreateViewHolder(@NonNull View itemView) {
         final ViewHolder cHolder = new ViewHolder(itemView);
-        View.OnClickListener onClickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (onDelegateClickListener != null) {
-                    onDelegateClickListener.onClick(view, cHolder.getAdapterPosition());
-                }
+        View.OnClickListener onClickListener = view -> {
+            if (onDelegateClickListener != null) {
+                onDelegateClickListener.onClick(view, cHolder.getAdapterPosition());
             }
         };
         cHolder.vgAppInfoPanel.setOnClickListener(onClickListener);
