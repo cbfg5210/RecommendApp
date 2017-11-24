@@ -13,16 +13,19 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.ue.adapterdelegate.Item;
+import com.google.gson.Gson;
 import com.ue.recommend.model.RecommendApp;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.ue.recommend.model.RecommendAppResult;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 import static android.support.design.widget.BottomSheetBehavior.STATE_COLLAPSED;
 import static android.support.design.widget.BottomSheetBehavior.STATE_EXPANDED;
@@ -40,6 +43,11 @@ public class MainBottomSheetView extends CoordinatorLayout implements View.OnCli
     private Context mContext;
 
     private SharedPreferences sharedPreferences;
+    private RecommendAppDao mRecommendAppDao;
+    private boolean hasRecommendApps;
+
+    private Disposable showDisposable;
+    private Disposable pullDisposable;
 
     public MainBottomSheetView(Context context) {
         this(context, null, 0);
@@ -71,9 +79,10 @@ public class MainBottomSheetView extends CoordinatorLayout implements View.OnCli
         rvRecommendApps.setAdapter(adapter);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        mRecommendAppDao = AppDatabase.getInstance(getContext()).recommendAppDao();
 
-//        pullRecommendApps();
-        showTestRecommendApps();
+        showRecommendApps();
+        pullRecommendApps();
     }
 
     public void addBannerAd(View bannerView) {
@@ -89,104 +98,63 @@ public class MainBottomSheetView extends CoordinatorLayout implements View.OnCli
         bottomSheetBehavior.setState(STATE_COLLAPSED);
     }
 
-    public void showTestRecommendApps() {
-        List<Item> recommendApps = new ArrayList<>();
-
-        RecommendApp recommendApp = new RecommendApp();
-        recommendApp.appIcon = "https://github.com/bumptech/glide/raw/master/static/glide_logo.png";
-        recommendApp.appName = "appNameappNameappNameappNameappName";
-        recommendApp.appDescription = "appDescriptionappDescriptionappDescriptionappDescriptionappDescriptionappDescriptionappDescriptionappDescription";
-        recommendApp.appUrl = "https://github.com/bumptech/glide";
-
-        for (int i = 0; i < 20; i++) {
-            recommendApps.add(recommendApp);
-        }
-        adapter.setItems(recommendApps);
-        adapter.notifyDataSetChanged();
-    }
-
-    /*private void pullRecommendApps() {
-        String cacheRecommendAppsStr = sharedPreferences.getString(SPKeys.CACHE_RECOMMEND_APPS, "");
-        if (!TextUtils.isEmpty(cacheRecommendAppsStr)) {
-            showRecommendApps(cacheRecommendAppsStr);
-        }
-
-        long cacheTime = sharedPreferences.getLong(LAST_PULL_TIME, 0);
-        if (System.currentTimeMillis() - cacheTime < 24 * 3600000) {
-            return;
-        }
-        //刷新数据
-        Observable
-                .create(new ObservableOnSubscribe<String>() {
-                    @Override
-                    public void subscribe(@NonNull ObservableEmitter<String> e) throws Exception {
-                        String result = BmobUtils.findBQL("select * from RecommendApp");
-                        Log.e("MainActivity", "---pullRecommendApps---: result=" + result);
-                        //result={"results":[{"appDescription":"这是一款好玩的棋类游戏合集哦，有单机、双人、在线、 邀请四种模式，更可以添加好友以及邀请ta一起对战，","appIcon":"http://pp.myapp.com/ma_icon/0/icon_42342916_1498996465/96","appName":"人生如棋","appUrl":"http://android.myapp.com/myapp/detail.htm?apkName=com.ue.chess_life","createdAt":"2017-09-17 22:38:48","objectId":"hSovPPPg","updatedAt":"2017-09-17 22:40:35"}]}
-                        //result=Not Found:(findBQL)https://api.bmob.cn/1/cloudQuery?bql=select+*+from+RecommendAppa&values=[]
-                        if (result.contains("appName")) {
-                            sharedPreferences.putString(SPKeys.CACHE_RECOMMEND_APPS, result);
-                            sharedPreferences.putLong(LAST_PULL_TIME, System.currentTimeMillis());
-
-                            e.onNext(result);
-                        }
-                        e.onComplete();
+    private void showRecommendApps() {
+        showDisposable = Observable
+                .create((ObservableEmitter<List<RecommendApp>> e) -> {
+                    List<RecommendApp> recommendApps = mRecommendAppDao.getRecommendApps();
+                    if (recommendApps != null && recommendApps.size() > 0) {
+                        hasRecommendApps = true;
+                        e.onNext(recommendApps);
                     }
+                    e.onComplete();
                 })
-                .subscribeOn(Schedulers.single())
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<String>() {
-                    @Override
-                    public void accept(String result) throws Exception {
-                        showRecommendApps(result);
+                .subscribe(recommendApps -> {
+                    if (getContext() != null) {
+                        adapter.setItems(new ArrayList<>(recommendApps));
+                        adapter.notifyDataSetChanged();
                     }
                 });
-    }*/
+    }
 
-    private void showRecommendApps(String result) {
-        Log.e("MainActivity", "---showRecommendApps---: result=" + result);
-        if (getContext() == null) {
+    private void pullRecommendApps() {
+        long cacheTime = sharedPreferences.getLong(LAST_PULL_TIME, 0);
+        if (System.currentTimeMillis() - cacheTime < 86400000) {
+            //24*60*60*1000=86400000,缓存时间小于一天不重新获取数据
             return;
         }
-        JSONObject jsonObject;
-        try {
-            jsonObject = new JSONObject(result);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            jsonObject = new JSONObject();
-        }
+        Log.e("MainFragment", "pullRecommendApps: **********");
+        //刷新数据
+        pullDisposable = Observable
+                .create((@NonNull ObservableEmitter<List<RecommendApp>> e) -> {
+                    String result = BmobUtils.findBQL("select * from RecommendApp");
+                    Log.e("MainActivity", "---pullRecommendApps---: result=" + result);
+                    //result={"results":[{"appDescription":"这是一款好玩的棋类游戏合集哦，有单机、双人、在线、 邀请四种模式，更可以添加好友以及邀请ta一起对战，","appIcon":"http://pp.myapp.com/ma_icon/0/icon_42342916_1498996465/96","appName":"人生如棋","appUrl":"http://android.myapp.com/myapp/detail.htm?apkName=com.ue.chess_life","createdAt":"2017-09-17 22:38:48","objectId":"hSovPPPg","updatedAt":"2017-09-17 22:40:35"}]}
+                    //result=Not Found:(findBQL)https://api.bmob.cn/1/cloudQuery?bql=select+*+from+RecommendAppa&values=[]
+                    if (result.contains("appName")) {
+                        RecommendAppResult recommendAppResult = new Gson().fromJson(result, RecommendAppResult.class);
+                        mRecommendAppDao.saveRecommendApps(recommendAppResult.results);
 
-        JSONArray resultsArray = jsonObject.optJSONArray("results");
-        if (resultsArray.length() == 0) {
-            return;
-        }
+                        sharedPreferences.edit()
+                                .putLong(LAST_PULL_TIME, System.currentTimeMillis())
+                                .apply();
 
-        List<Item> recommendApps = new ArrayList<>();
-        String packageName;
-        String thisPackageName = getContext().getPackageName();
-        boolean isZh = Locale.getDefault().getLanguage().equals("zh");
-        for (int i = 0, len = resultsArray.length(); i < len; i++) {
-            JSONObject itemObj = resultsArray.optJSONObject(i);
-            //如果是本应用则不显示
-            packageName = itemObj.optString("packageName", "");
-            if (packageName.equals(thisPackageName)) {
-                continue;
-            }
-            RecommendApp recommendApp = new RecommendApp();
-            if (isZh) {
-                recommendApp.appName = itemObj.optString("appName", "");
-                recommendApp.appDescription = itemObj.optString("appDescription", "");
-            } else {
-                recommendApp.appName = itemObj.optString("appNameEn", "");
-                recommendApp.appDescription = itemObj.optString("appDescriptionEn", "");
-            }
-            recommendApp.appIcon = itemObj.optString("appIcon", "");
-            recommendApp.appUrl = itemObj.optString("appUrl", "");
-            recommendApp.packageName = packageName;
-            recommendApps.add(recommendApp);
-        }
-        adapter.setItems(recommendApps);
-        adapter.notifyDataSetChanged();
+                        if (!hasRecommendApps) {
+                            hasRecommendApps = true;
+                            e.onNext(recommendAppResult.results);
+                        }
+                    }
+                    e.onComplete();
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(recommendApps -> {
+                    if (getContext() != null) {
+                        adapter.setItems(new ArrayList<>(recommendApps));
+                        adapter.notifyDataSetChanged();
+                    }
+                });
     }
 
     @Override
@@ -196,6 +164,19 @@ public class MainBottomSheetView extends CoordinatorLayout implements View.OnCli
             int newState = bottomSheetBehavior.getState() == STATE_COLLAPSED ? STATE_EXPANDED : STATE_COLLAPSED;
             bottomSheetBehavior.setState(newState);
             return;
+        }
+    }
+
+    @Override
+    public void onDetachedFromWindow() {
+        dispose(showDisposable);
+        dispose(pullDisposable);
+        super.onDetachedFromWindow();
+    }
+
+    private void dispose(Disposable disposable) {
+        if (disposable != null && !disposable.isDisposed()) {
+            disposable.dispose();
         }
     }
 }

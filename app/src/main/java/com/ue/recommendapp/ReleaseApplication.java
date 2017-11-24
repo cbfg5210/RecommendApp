@@ -7,6 +7,8 @@ import android.os.Process;
 import android.support.v7.app.AppCompatDelegate;
 import android.util.Log;
 
+import com.ue.recommend.BmobUtils;
+
 import java.util.List;
 
 /**
@@ -24,7 +26,7 @@ public class ReleaseApplication extends Application {
             //support svg for TextView drawableLeft
             AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
             //init bmob
-            //BmobUtils.initBmob(BuildConfig.BMOB_APP_ID, BuildConfig.BMOB_API_KEY);
+            BmobUtils.initBmob("", "");
             // init debug tools
             initDebugTools();
         } else {
