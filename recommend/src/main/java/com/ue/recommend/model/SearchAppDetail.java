@@ -10,12 +10,10 @@ public class SearchAppDetail implements Item {
     public String name;
     public String iconUrl;
     public String editorIntro;
-    private String pName;
-    public transient String appUrl;
+    public String pName;
 
-    public void setPName(String pName) {
-        this.pName = pName;
-        appUrl = "http://android.myapp.com/myapp/detail.htm?apkName=" + pName;
+    public String getAppUrl() {
+        return "http://android.myapp.com/myapp/detail.htm?apkName=" + pName;
     }
 
     @Override

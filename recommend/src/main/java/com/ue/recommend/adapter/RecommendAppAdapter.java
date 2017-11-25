@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Toast;
 
@@ -48,12 +49,16 @@ public class RecommendAppAdapter extends DelegationAdapter<Item> implements OnDe
         }
         if (item instanceof SearchAppDetail) {
             SearchAppDetail recommendApp = (SearchAppDetail) items.get(position);
-            openBrowser(activity, recommendApp.appUrl);
+            openBrowser(activity, recommendApp.getAppUrl());
             return;
         }
     }
 
     private void openBrowser(Context context, String url) {
+        if (TextUtils.isEmpty(url)) {
+            Toast.makeText(context, context.getString(R.string.error_open_browser), Toast.LENGTH_SHORT).show();
+            return;
+        }
         Uri uri = Uri.parse(url);
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
