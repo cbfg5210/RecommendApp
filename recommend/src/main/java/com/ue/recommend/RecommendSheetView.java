@@ -165,8 +165,10 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
             Toast.makeText(getContext(), "please input keyword", Toast.LENGTH_SHORT).show();
             return;
         }
+        dispose(searchDisposable);
         searchDisposable = mRecommendAppProxy.searchApps(keyword)
                 .subscribe(searchAppDetails -> {
+                    adapter.getItems().clear();
                     adapter.getItems().addAll(searchAppDetails);
                     adapter.notifyDataSetChanged();
                 }, throwable -> {
