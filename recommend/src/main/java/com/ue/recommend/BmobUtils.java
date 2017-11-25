@@ -121,14 +121,13 @@ public class BmobUtils {
      * @return JSON格式结果
      */
     public static String findBQL(String BQL, String value) {
-        String result = STRING_EMPTY;
+        String result;
         if (isInit()) {
-            HttpURLConnection conn = null;
             BQL = urlEncoder(BQL) + "&values=[" + urlEncoder(value) + "]";
             String mURL = "https://api.bmob.cn/1/cloudQuery?bql=" + BQL;
 
             try {
-                conn = connectionCommonSetting(conn, new URL(mURL), METHOD_GET);
+                HttpURLConnection conn = connectionCommonSetting(new URL(mURL), METHOD_GET);
                 conn.connect();
                 result = getResultFromConnection(conn);
                 conn.disconnect();
@@ -151,14 +150,14 @@ public class BmobUtils {
         TIME_OUT = timeout;
     }
 
-    private static void printWriter(HttpURLConnection conn, String paramContent) throws UnsupportedEncodingException, IOException {
+    private static void printWriter(HttpURLConnection conn, String paramContent) throws IOException {
         PrintWriter out = new PrintWriter(new OutputStreamWriter(conn.getOutputStream(), UTF8));
         out.write(paramContent);
         out.flush();
         out.close();
     }
 
-    private static String getResultFromConnection(HttpURLConnection conn) throws UnsupportedEncodingException, IOException {
+    private static String getResultFromConnection(HttpURLConnection conn) throws IOException {
         StringBuffer result = new StringBuffer();
         BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), UTF8));
         String line;
@@ -169,8 +168,8 @@ public class BmobUtils {
         return result.toString();
     }
 
-    private static HttpURLConnection connectionCommonSetting(HttpURLConnection conn, URL url, String method) throws IOException {
-        conn = (HttpURLConnection) url.openConnection();
+    private static HttpURLConnection connectionCommonSetting(URL url, String method) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod(method);
         conn.setDoInput(true);
         conn.setReadTimeout(TIME_OUT);
