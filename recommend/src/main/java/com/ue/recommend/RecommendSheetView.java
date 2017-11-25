@@ -21,7 +21,7 @@ import io.reactivex.disposables.Disposable;
 import static android.support.design.widget.BottomSheetBehavior.STATE_COLLAPSED;
 import static android.support.design.widget.BottomSheetBehavior.STATE_EXPANDED;
 
-public class MainBottomSheetView extends CoordinatorLayout implements View.OnClickListener {
+public class RecommendSheetView extends CoordinatorLayout implements View.OnClickListener {
     private ViewGroup vgMainBottomSheet;
     private RecyclerView rvRecommendApps;
     private ViewGroup vgSheetContentPanel;
@@ -34,17 +34,17 @@ public class MainBottomSheetView extends CoordinatorLayout implements View.OnCli
     private Disposable showDisposable;
     private Disposable pullDisposable;
 
-    public MainBottomSheetView(Context context) {
+    public RecommendSheetView(Context context) {
         this(context, null, 0);
     }
 
-    public MainBottomSheetView(Context context, AttributeSet attrs) {
+    public RecommendSheetView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public MainBottomSheetView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public RecommendSheetView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        View.inflate(context, R.layout.layout_main_bottom_sheet, this);
+        View.inflate(context, R.layout.layout_recommend_sheet, this);
     }
 
     @Override
