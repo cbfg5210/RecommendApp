@@ -3,6 +3,7 @@ package com.ue.recommend.adapter;
 import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -47,8 +48,8 @@ public class SearchAppDetailDelegate extends BaseAdapterDelegate<Item> {
         Picasso.with(mActivity)
                 .load(recommendApp.iconUrl)
                 .into(cHolder.ivAppIcon);
-        cHolder.tvAppName.setText(recommendApp.appName);
-        cHolder.tvAppDescription.setText(recommendApp.description);
+        cHolder.tvAppName.setText(recommendApp.name);
+        cHolder.tvAppDescription.setText(TextUtils.isEmpty(recommendApp.editorIntro) ? recommendApp.name : recommendApp.editorIntro);
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,6 +41,7 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
     private RecommendAppProxy mRecommendAppProxy;
     private Disposable showDisposable;
     private Disposable pullDisposable;
+    private Disposable searchDisposable;
 
     public RecommendSheetView(Context context) {
         this(context, null, 0);
@@ -81,6 +83,8 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
                         adapter.setItems(new ArrayList<>(recommendApps));
                         adapter.notifyDataSetChanged();
                     }
+                }, throwable -> {
+                    Toast.makeText(getContext(), "读取本地数据出错:" + throwable.getMessage(), Toast.LENGTH_SHORT).show();
                 });
         //pull recommended apps from server
         Observable<List<RecommendApp>> pullObservable = mRecommendAppProxy.pullRecommendApps();
@@ -90,6 +94,8 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
                     adapter.setItems(new ArrayList<>(recommendApps));
                     adapter.notifyDataSetChanged();
                 }
+            }, throwable -> {
+                Toast.makeText(getContext(), "请求数据出错:" + throwable.getMessage(), Toast.LENGTH_SHORT).show();
             });
         }
     }
@@ -116,15 +122,33 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
             return;
         }
         if (viewId == R.id.btnSearch) {
-            Toast.makeText(getContext(), "sss", Toast.LENGTH_SHORT).show();
+            searchApps();
             return;
         }
+    }
+
+    private void searchApps() {
+        String keyword = etKeyword.getText().toString().trim();
+        if (TextUtils.isEmpty(keyword)) {
+            Toast.makeText(getContext(), "please input keyword", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        searchDisposable = mRecommendAppProxy.searchApps(keyword)
+                .subscribe(searchAppDetails -> {
+                    if (adapter.getItems() != null) {
+                        adapter.getItems().addAll(searchAppDetails);
+                        adapter.notifyDataSetChanged();
+                    }
+                }, throwable -> {
+                    Toast.makeText(getContext(), "请求数据出错:" + throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
     @Override
     public void onDetachedFromWindow() {
         dispose(showDisposable);
         dispose(pullDisposable);
+        dispose(searchDisposable);
         super.onDetachedFromWindow();
     }
 

@@ -10,22 +10,17 @@ import com.ue.recommend.util.GsonHolder;
  * Created by hawk on 2017/11/25.
  */
 @Entity
-public class SearchAppDetail implements Item{
-    public int categoryId;
-    public String appName;
+public class SearchAppDetail implements Item {
+    public String name;
     public String iconUrl;
-    public String description;
+    public String editorIntro;
     @PrimaryKey
-    private String pkgName;
+    private String pName;
     public transient String appUrl;
 
-    public void setPkgName(String pkgName) {
-        this.pkgName = pkgName;
-        appUrl="http://android.myapp.com/myapp/detail.htm?apkName="+pkgName;
-    }
-
-    public String getPkgName() {
-        return pkgName;
+    public void setPName(String pName) {
+        this.pName = pName;
+        appUrl = "http://android.myapp.com/myapp/detail.htm?apkName=" + pName;
     }
 
     @Override

@@ -5,7 +5,6 @@ import android.app.Application;
 import android.content.Context;
 import android.os.Process;
 import android.support.v7.app.AppCompatDelegate;
-import android.util.Log;
 
 import com.ue.recommend.util.BmobUtils;
 
@@ -20,9 +19,7 @@ public class ReleaseApplication extends Application {
     public void onCreate() {
         super.onCreate();
         // 多进程启动会多次调用 Application＃onCreate() 方法，区分进程作初始化操作，能有效减少不必要的开销
-        String packageName = getPackageName();
-        Log.e("ReleaseApplication", "onCreate: packageName=" + packageName);
-        if (packageName.equals(getProcessName(this))) {// init for main process
+        if (getPackageName().equals(getProcessName(this))) {// init for main process
             //support svg for TextView drawableLeft
             AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
             //init bmob

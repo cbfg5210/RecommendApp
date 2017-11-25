@@ -10,6 +10,8 @@ import com.ue.recommend.db.RecommendAppDao;
 import com.ue.recommend.db.RecommendDatabase;
 import com.ue.recommend.model.RecommendApp;
 import com.ue.recommend.model.RecommendAppResult;
+import com.ue.recommend.model.SearchAppDetail;
+import com.ue.recommend.model.SearchAppResult;
 
 import java.util.List;
 
@@ -76,6 +78,28 @@ public class RecommendAppProxy {
                         if (!hasRecommendApps) {
                             hasRecommendApps = true;
                             e.onNext(recommendAppResult.results);
+                        }
+                    }
+                    e.onComplete();
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    public Observable<List<SearchAppDetail>> searchApps(String keyword) {
+        return Observable
+                .create((ObservableEmitter<List<SearchAppDetail>> e) -> {
+                    String result = BmobUtils.getInstance().search(keyword);
+                    Log.e("RecommendAppProxy", "searchApps: result=" + result);
+                    if (result.contains("apps")) {
+                        result = result.trim();
+                        if (result.endsWith(";")) {
+                            result = result.substring(0, result.length() - 1);
+                        }
+                        Log.e("RecommendAppProxy", "searchApps: processed result=" + result);
+                        SearchAppResult searchAppResult = GsonHolder.getGson().fromJson(result, SearchAppResult.class);
+                        if (searchAppResult != null && searchAppResult.apps != null && searchAppResult.apps.size() > 0) {
+                            e.onNext(searchAppResult.apps);
                         }
                     }
                     e.onComplete();

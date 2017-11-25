@@ -15,7 +15,6 @@ package com.ue.recommend.util;
 import android.text.TextUtils;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -44,6 +43,7 @@ public class BmobUtils {
     private static final String UTF8 = "UTF-8";
     private static final String CONTENT_TYPE_TAG = "Content-Type";
     private static final String CONTENT_TYPE_JSON = "application/json";
+    private static final String CONTENT_TYPE_TEXT = "text/plain";
     private static final String METHOD_GET = "GET";
 
     private static volatile BmobUtils instance;
@@ -91,7 +91,7 @@ public class BmobUtils {
      * @param BQL SQL语句。例如：select * from Student where name=\"张三\" limit 0,10 order by name
      * @return JSON格式结果
      */
-    public String findBQL(String BQL) {
+    public String findBQL(String BQL) throws IOException {
         return findBQL(BQL, STRING_EMPTY);
     }
 
@@ -102,7 +102,7 @@ public class BmobUtils {
      * @param value 参数对应SQL中?以,为分隔符。例如"\"张三\",0,10"
      * @return JSON格式结果
      */
-    public String findBQL(String BQL, String value) {
+    public String findBQL(String BQL, String value) throws IOException {
         if (!IS_INIT) {
             return "Unregistered";
         }
@@ -110,32 +110,23 @@ public class BmobUtils {
         BQL = urlEncoder(BQL) + "&values=[" + urlEncoder(value) + "]";
         String mURL = "https://api.bmob.cn/1/cloudQuery?bql=" + BQL;
 
-        try {
-            HttpURLConnection conn = getBmobConnection(new URL(mURL), METHOD_GET);
-            conn.connect();
-            result = getResultFromConnection(conn);
-            conn.disconnect();
-        } catch (FileNotFoundException e) {
-            result = "not found:(findBQL)" + e.getMessage();
-        } catch (Exception e) {
-            result = "error:(findBQL)" + e.getMessage();
-        }
+        HttpURLConnection conn = getBmobConnection(new URL(mURL), METHOD_GET);
+        conn.connect();
+        result = getResultFromConnection(conn);
+        conn.disconnect();
+
         return result;
     }
 
-    public String search(String kw, String pns, int sid) {
+    public String search(String kw) throws IOException {
         String result;
-        String mURL = "http://android.myapp.com/myapp/searchAjax.htm?kw=" + urlEncoder(kw) + "&pns=" + pns + "&sid" + sid;
-        try {
-            HttpURLConnection conn = getCommonConnection(new URL(mURL), METHOD_GET);
-            conn.connect();
-            result = getResultFromConnection(conn);
-            conn.disconnect();
-        } catch (FileNotFoundException e) {
-            result = "search,fileNotFoundException,msg=" + e.getMessage();
-        } catch (Exception e) {
-            result = "search,error,msg=" + e.getMessage();
-        }
+        String mURL = String.format("http://mapp.qzone.qq.com/cgi-bin/mapp/mapp_search_result?keyword=%s&platform=touch&network_type=undefined&resolution=720x1080", urlEncoder(kw));
+
+        HttpURLConnection conn = getCommonConnection(new URL(mURL), METHOD_GET);
+        conn.connect();
+        result = getResultFromConnection(conn);
+        conn.disconnect();
+
         return result;
     }
 
@@ -148,7 +139,7 @@ public class BmobUtils {
         conn.setUseCaches(false);
         conn.setInstanceFollowRedirects(true);
 
-        conn.setRequestProperty(CONTENT_TYPE_TAG, CONTENT_TYPE_JSON);
+        conn.setRequestProperty(CONTENT_TYPE_TAG, CONTENT_TYPE_TEXT);
 
         return conn;
     }
