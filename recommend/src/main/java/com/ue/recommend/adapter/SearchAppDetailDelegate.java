@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -11,19 +12,20 @@ import com.squareup.picasso.Picasso;
 import com.ue.adapterdelegate.BaseAdapterDelegate;
 import com.ue.adapterdelegate.Item;
 import com.ue.recommend.R;
-import com.ue.recommend.model.RecommendApp;
+import com.ue.recommend.model.SearchAppDetail;
 
 import java.util.List;
 
 /**
- * Created by hawk on 2017/9/14.
+ * Created by hawk on 2017/11/25.
  */
-class RecommendAppDelegate extends BaseAdapterDelegate<Item> {
+
+public class SearchAppDetailDelegate extends BaseAdapterDelegate<Item> {
     private Activity mActivity;
 
-    public RecommendAppDelegate(Activity activity) {
+    public SearchAppDetailDelegate(Activity activity) {
         super(activity, R.layout.item_recommend_app);
-        this.mActivity = activity;
+        mActivity = activity;
     }
 
     @NonNull
@@ -34,28 +36,30 @@ class RecommendAppDelegate extends BaseAdapterDelegate<Item> {
 
     @Override
     public boolean isForViewType(@NonNull Item item) {
-        return (item instanceof RecommendApp);
+        return (item instanceof SearchAppDetail);
     }
 
     @Override
     protected void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, @NonNull Item item, @NonNull List payloads) {
         ViewHolder cHolder = (ViewHolder) holder;
-        RecommendApp recommendApp = (RecommendApp) item;
+        SearchAppDetail recommendApp = (SearchAppDetail) item;
 
         Picasso.with(mActivity)
-                .load(recommendApp.appIcon)
+                .load(recommendApp.iconUrl)
                 .into(cHolder.ivAppIcon);
         cHolder.tvAppName.setText(recommendApp.appName);
-        cHolder.tvAppDescription.setText(recommendApp.appDescription);
+        cHolder.tvAppDescription.setText(recommendApp.description);
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
+        ViewGroup vgAppInfoPanel;
         ImageView ivAppIcon;
         TextView tvAppName;
         TextView tvAppDescription;
 
         ViewHolder(View itemView) {
             super(itemView);
+            vgAppInfoPanel = itemView.findViewById(R.id.vgAppInfoPanel);
             ivAppIcon = itemView.findViewById(R.id.ivAppIcon);
             tvAppName = itemView.findViewById(R.id.tvAppName);
             tvAppDescription = itemView.findViewById(R.id.tvAppDescription);
