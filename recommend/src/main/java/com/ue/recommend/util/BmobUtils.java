@@ -32,7 +32,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 public class BmobUtils {
-    private static boolean IS_INIT = false;
+    private static boolean IS_INIT;
     private static String APP_ID;
     private static String REST_API_KEY;
 
@@ -121,6 +121,36 @@ public class BmobUtils {
             result = "error:(findBQL)" + e.getMessage();
         }
         return result;
+    }
+
+    public String search(String kw, String pns, int sid) {
+        String result;
+        String mURL = "http://android.myapp.com/myapp/searchAjax.htm?kw=" + urlEncoder(kw) + "&pns=" + pns + "&sid" + sid;
+        try {
+            HttpURLConnection conn = getCommonConnection(new URL(mURL), METHOD_GET);
+            conn.connect();
+            result = getResultFromConnection(conn);
+            conn.disconnect();
+        } catch (FileNotFoundException e) {
+            result = "search,fileNotFoundException,msg=" + e.getMessage();
+        } catch (Exception e) {
+            result = "search,error,msg=" + e.getMessage();
+        }
+        return result;
+    }
+
+    private HttpURLConnection getCommonConnection(URL url, String method) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod(method);
+        conn.setDoInput(true);
+        conn.setReadTimeout(TIME_OUT);
+
+        conn.setUseCaches(false);
+        conn.setInstanceFollowRedirects(true);
+
+        conn.setRequestProperty(CONTENT_TYPE_TAG, CONTENT_TYPE_JSON);
+
+        return conn;
     }
 
     private String getResultFromConnection(HttpURLConnection conn) throws IOException {

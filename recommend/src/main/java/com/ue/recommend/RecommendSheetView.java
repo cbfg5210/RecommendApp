@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.ue.recommend.adapter.RecommendAppAdapter;
 import com.ue.recommend.model.RecommendApp;
 import com.ue.recommend.util.RecommendAppProxy;
 

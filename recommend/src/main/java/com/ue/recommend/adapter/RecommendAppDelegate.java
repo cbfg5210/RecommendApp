@@ -1,4 +1,4 @@
-package com.ue.recommend;
+package com.ue.recommend.adapter;
 
 import android.app.Activity;
 import android.support.annotation.NonNull;
@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 import com.ue.adapterdelegate.BaseAdapterDelegate;
 import com.ue.adapterdelegate.Item;
+import com.ue.recommend.R;
 import com.ue.recommend.model.RecommendApp;
 
 import java.util.List;

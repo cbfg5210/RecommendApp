@@ -1,4 +1,4 @@
-package com.ue.recommend;
+package com.ue.recommend.adapter;
 
 import android.app.Activity;
 import android.content.Context;
@@ -10,6 +10,7 @@ import android.widget.Toast;
 import com.ue.adapterdelegate.DelegationAdapter;
 import com.ue.adapterdelegate.Item;
 import com.ue.adapterdelegate.OnDelegateClickListener;
+import com.ue.recommend.R;
 import com.ue.recommend.model.RecommendApp;
 
 import java.util.List;
