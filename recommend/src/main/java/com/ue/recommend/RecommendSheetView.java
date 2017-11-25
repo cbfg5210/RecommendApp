@@ -3,6 +3,7 @@ package com.ue.recommend;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
+import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.widget.RecyclerView;
@@ -10,6 +11,7 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -43,6 +45,8 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
     private Disposable pullDisposable;
     private Disposable searchDisposable;
 
+    private InputMethodManager inputManager;
+
     public RecommendSheetView(Context context) {
         this(context, null, 0);
     }
@@ -71,6 +75,21 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
         btnSearch.setOnClickListener(this);
 
         bottomSheetBehavior = BottomSheetBehavior.from(vgMainBottomSheet);
+        bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                if (newState == STATE_COLLAPSED) {
+                    if (inputManager == null) {
+                        inputManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    }
+                    inputManager.hideSoftInputFromWindow(etKeyword.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+            }
+        });
 
         adapter = new RecommendAppAdapter((Activity) getContext(), null);
         rvRecommendApps.setAdapter(adapter);
