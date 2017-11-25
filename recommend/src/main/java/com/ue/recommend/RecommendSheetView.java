@@ -9,8 +9,12 @@ import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import com.ue.recommend.model.RecommendApp;
+import com.ue.recommend.util.RecommendAppProxy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +30,8 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
     private RecyclerView rvRecommendApps;
     private ViewGroup vgSheetContentPanel;
     private View vgListHeader;
+    private EditText etKeyword;
+    private Button btnSearch;
 
     private BottomSheetBehavior bottomSheetBehavior;
     private RecommendAppAdapter adapter;
@@ -55,7 +61,11 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
         rvRecommendApps = findViewById(R.id.rvRecommendApps);
         vgSheetContentPanel = findViewById(R.id.vgSheetContentPanel);
         vgListHeader = findViewById(R.id.vgListHeader);
+        etKeyword = findViewById(R.id.etKeyword);
+        btnSearch = findViewById(R.id.btnSearch);
+
         vgListHeader.setOnClickListener(this);
+        btnSearch.setOnClickListener(this);
 
         bottomSheetBehavior = BottomSheetBehavior.from(vgMainBottomSheet);
 
@@ -102,6 +112,10 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
         if (viewId == R.id.vgListHeader) {
             int newState = bottomSheetBehavior.getState() == STATE_COLLAPSED ? STATE_EXPANDED : STATE_COLLAPSED;
             bottomSheetBehavior.setState(newState);
+            return;
+        }
+        if (viewId == R.id.btnSearch) {
+            Toast.makeText(getContext(), "sss", Toast.LENGTH_SHORT).show();
             return;
         }
     }

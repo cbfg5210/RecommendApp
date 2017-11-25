@@ -1,4 +1,4 @@
-package com.ue.recommend;
+package com.ue.recommend.db;
 
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.Room;
@@ -10,7 +10,7 @@ import com.ue.recommend.model.RecommendApp;
 /**
  * Created by hawk on 2017/9/28.
  */
-@Database(entities = {RecommendApp.class}, version = 6)
+@Database(entities = {RecommendApp.class}, version = 7)
 public abstract class RecommendDatabase extends RoomDatabase {
     private static volatile RecommendDatabase instance;
 

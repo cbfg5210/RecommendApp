@@ -10,14 +10,14 @@
  * @version V1.3.1
  * @since 2015-07-07
  */
-package com.ue.recommend;
+package com.ue.recommend.util;
+
+import android.text.TextUtils;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -32,37 +32,34 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 public class BmobUtils {
-
     private static boolean IS_INIT = false;
-    private static int TIME_OUT = 10000;
+    private static String APP_ID;
+    private static String REST_API_KEY;
 
-    private static String STRING_EMPTY = "";
-    private static String APP_ID = STRING_EMPTY;
-    private static String REST_API_KEY = STRING_EMPTY;
-    private static String MASTER_KEY = STRING_EMPTY;
-
+    private static final int TIME_OUT = 10000;
     private static final String BMOB_APP_ID_TAG = "X-Bmob-Application-Id";
     private static final String BMOB_REST_KEY_TAG = "X-Bmob-REST-API-Key";
-    private static final String BMOB_MASTER_KEY_TAG = "X-Bmob-Master-Key";
+
+    private static final String STRING_EMPTY = "";
+    private static final String UTF8 = "UTF-8";
     private static final String CONTENT_TYPE_TAG = "Content-Type";
     private static final String CONTENT_TYPE_JSON = "application/json";
-
     private static final String METHOD_GET = "GET";
 
-    private static final String UTF8 = "UTF-8";
-    private static final String CHAR_RISK = ":";
+    private static volatile BmobUtils instance;
 
-    public static final String MSG_NOT_FOUND = "Not Found";
-    public static final String MSG_ERROR = "Error";
-    public static final String MSG_UNREGISTERED = "Unregistered";
+    public static BmobUtils getInstance() {
+        if (instance == null) {
+            synchronized (BmobUtils.class) {
+                if (instance == null) {
+                    instance = new BmobUtils();
+                }
+            }
+        }
+        return instance;
+    }
 
-    /**
-     * 是否初始化Bmob
-     *
-     * @return 初始化结果
-     */
-    public static boolean isInit() {
-        return IS_INIT;
+    private BmobUtils() {
     }
 
     /**
@@ -72,26 +69,11 @@ public class BmobUtils {
      * @param apiKey 填写 REST API Key
      * @return 注册结果
      */
-    public static boolean initBmob(String appId, String apiKey) {
-        return initBmob(appId, apiKey, 10000);
-    }
-
-    /**
-     * 初始化Bmob
-     *
-     * @param appId   填写 Application ID
-     * @param apiKey  填写 REST API Key
-     * @param timeout 设置超时（1000~20000ms）
-     * @return 注册结果
-     */
-    public static boolean initBmob(String appId, String apiKey, int timeout) {
+    public boolean initBmob(String appId, String apiKey) {
         APP_ID = appId;
         REST_API_KEY = apiKey;
-        if (!APP_ID.equals(STRING_EMPTY) && !REST_API_KEY.equals(STRING_EMPTY)) {
+        if (!TextUtils.isEmpty(APP_ID) && !TextUtils.isEmpty(REST_API_KEY)) {
             IS_INIT = true;
-        }
-        if (timeout > 1000 && timeout < 20000) {
-            TIME_OUT = timeout;
         }
         try {
             SSLContext sc = SSLContext.getInstance("SSL");
@@ -100,7 +82,7 @@ public class BmobUtils {
         } catch (Exception e) {
             IS_INIT = false;
         }
-        return isInit();
+        return IS_INIT;
     }
 
     /**
@@ -109,7 +91,7 @@ public class BmobUtils {
      * @param BQL SQL语句。例如：select * from Student where name=\"张三\" limit 0,10 order by name
      * @return JSON格式结果
      */
-    public static String findBQL(String BQL) {
+    public String findBQL(String BQL) {
         return findBQL(BQL, STRING_EMPTY);
     }
 
@@ -120,44 +102,28 @@ public class BmobUtils {
      * @param value 参数对应SQL中?以,为分隔符。例如"\"张三\",0,10"
      * @return JSON格式结果
      */
-    public static String findBQL(String BQL, String value) {
+    public String findBQL(String BQL, String value) {
+        if (!IS_INIT) {
+            return "Unregistered";
+        }
         String result;
-        if (isInit()) {
-            BQL = urlEncoder(BQL) + "&values=[" + urlEncoder(value) + "]";
-            String mURL = "https://api.bmob.cn/1/cloudQuery?bql=" + BQL;
+        BQL = urlEncoder(BQL) + "&values=[" + urlEncoder(value) + "]";
+        String mURL = "https://api.bmob.cn/1/cloudQuery?bql=" + BQL;
 
-            try {
-                HttpURLConnection conn = connectionCommonSetting(new URL(mURL), METHOD_GET);
-                conn.connect();
-                result = getResultFromConnection(conn);
-                conn.disconnect();
-            } catch (FileNotFoundException e) {
-                result = MSG_NOT_FOUND + CHAR_RISK + "(findBQL)" + e.getMessage();
-            } catch (Exception e) {
-                result = MSG_ERROR + CHAR_RISK + "(findBQL)" + e.getMessage();
-            }
-        } else {
-            result = MSG_UNREGISTERED;
+        try {
+            HttpURLConnection conn = getBmobConnection(new URL(mURL), METHOD_GET);
+            conn.connect();
+            result = getResultFromConnection(conn);
+            conn.disconnect();
+        } catch (FileNotFoundException e) {
+            result = "not found:(findBQL)" + e.getMessage();
+        } catch (Exception e) {
+            result = "error:(findBQL)" + e.getMessage();
         }
         return result;
     }
 
-    public static int getTimeout() {
-        return TIME_OUT;
-    }
-
-    public static void setTimeout(int timeout) {
-        TIME_OUT = timeout;
-    }
-
-    private static void printWriter(HttpURLConnection conn, String paramContent) throws IOException {
-        PrintWriter out = new PrintWriter(new OutputStreamWriter(conn.getOutputStream(), UTF8));
-        out.write(paramContent);
-        out.flush();
-        out.close();
-    }
-
-    private static String getResultFromConnection(HttpURLConnection conn) throws IOException {
+    private String getResultFromConnection(HttpURLConnection conn) throws IOException {
         StringBuffer result = new StringBuffer();
         BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), UTF8));
         String line;
@@ -168,7 +134,7 @@ public class BmobUtils {
         return result.toString();
     }
 
-    private static HttpURLConnection connectionCommonSetting(URL url, String method) throws IOException {
+    private HttpURLConnection getBmobConnection(URL url, String method) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod(method);
         conn.setDoInput(true);
@@ -179,15 +145,12 @@ public class BmobUtils {
 
         conn.setRequestProperty(BMOB_APP_ID_TAG, APP_ID);
         conn.setRequestProperty(BMOB_REST_KEY_TAG, REST_API_KEY);
-        if (!MASTER_KEY.equals(STRING_EMPTY)) {
-            conn.setRequestProperty(BMOB_MASTER_KEY_TAG, MASTER_KEY);
-        }
 
         conn.setRequestProperty(CONTENT_TYPE_TAG, CONTENT_TYPE_JSON);
         return conn;
     }
 
-    private static TrustManager[] trustAllCerts = new TrustManager[]{
+    private TrustManager[] trustAllCerts = new TrustManager[]{
             new X509TrustManager() {
                 @Override
                 public X509Certificate[] getAcceptedIssuers() {
@@ -206,7 +169,7 @@ public class BmobUtils {
             }
     };
 
-    private static String urlEncoder(String str) {
+    private String urlEncoder(String str) {
         try {
             return URLEncoder.encode(str, UTF8);
         } catch (UnsupportedEncodingException e1) {

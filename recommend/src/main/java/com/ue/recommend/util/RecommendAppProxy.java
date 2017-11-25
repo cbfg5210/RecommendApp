@@ -1,4 +1,4 @@
-package com.ue.recommend;
+package com.ue.recommend.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -6,6 +6,8 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.ue.recommend.db.RecommendAppDao;
+import com.ue.recommend.db.RecommendDatabase;
 import com.ue.recommend.model.RecommendApp;
 import com.ue.recommend.model.RecommendAppResult;
 
@@ -61,7 +63,7 @@ public class RecommendAppProxy {
         return Observable
                 .create((@NonNull ObservableEmitter<List<RecommendApp>> e) -> {
                     String bql = String.format("select * from RecommendApp where packageName!='%s'", mContext.getPackageName());
-                    String result = BmobUtils.findBQL(bql);
+                    String result = BmobUtils.getInstance().findBQL(bql);
                     Log.e("RecommendAppProxy", "pullRecommendApps: result=" + result);
 
                     if (result.contains("appName")) {
