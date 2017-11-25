@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.ue.adapterdelegate.Item;
 import com.ue.recommend.adapter.RecommendAppAdapter;
 import com.ue.recommend.model.RecommendApp;
 import com.ue.recommend.util.RecommendAppProxy;
@@ -39,6 +40,7 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
 
     private BottomSheetBehavior bottomSheetBehavior;
     private RecommendAppAdapter adapter;
+    private List<Item> mRecommendApps;
 
     private RecommendAppProxy mRecommendAppProxy;
     private Disposable showDisposable;
@@ -79,10 +81,12 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
                 if (newState == STATE_COLLAPSED) {
-                    if (inputManager == null) {
-                        inputManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    hideKeyBoard();
+                    if (mRecommendApps != null && mRecommendApps.size() > 0) {
+                        adapter.getItems().clear();
+                        adapter.getItems().addAll(mRecommendApps);
+                        adapter.notifyDataSetChanged();
                     }
-                    inputManager.hideSoftInputFromWindow(etKeyword.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
                 }
             }
 
@@ -90,8 +94,8 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
             }
         });
-
-        adapter = new RecommendAppAdapter((Activity) getContext(), null);
+        //adapter初始化的时候传入new ArrayList，后续就不用判断items是否为null了
+        adapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
         rvRecommendApps.setAdapter(adapter);
 
         mRecommendAppProxy = new RecommendAppProxy(getContext());
@@ -99,7 +103,8 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
         showDisposable = mRecommendAppProxy.getLocalRecommendApps()
                 .subscribe(recommendApps -> {
                     if (getContext() != null) {
-                        adapter.setItems(new ArrayList<>(recommendApps));
+                        mRecommendApps = new ArrayList<>(recommendApps);
+                        adapter.getItems().addAll(0, mRecommendApps);
                         adapter.notifyDataSetChanged();
                     }
                 }, throwable -> {
@@ -110,13 +115,21 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
         if (pullObservable != null) {
             pullDisposable = pullObservable.subscribe(recommendApps -> {
                 if (getContext() != null) {
-                    adapter.setItems(new ArrayList<>(recommendApps));
+                    mRecommendApps = new ArrayList<>(recommendApps);
+                    adapter.getItems().addAll(0, mRecommendApps);
                     adapter.notifyDataSetChanged();
                 }
             }, throwable -> {
                 Toast.makeText(getContext(), "请求数据出错:" + throwable.getMessage(), Toast.LENGTH_SHORT).show();
             });
         }
+    }
+
+    private void hideKeyBoard() {
+        if (inputManager == null) {
+            inputManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        }
+        inputManager.hideSoftInputFromWindow(etKeyword.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
     }
 
     public void addBannerAd(View bannerView) {
@@ -154,10 +167,8 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
         }
         searchDisposable = mRecommendAppProxy.searchApps(keyword)
                 .subscribe(searchAppDetails -> {
-                    if (adapter.getItems() != null) {
-                        adapter.getItems().addAll(searchAppDetails);
-                        adapter.notifyDataSetChanged();
-                    }
+                    adapter.getItems().addAll(searchAppDetails);
+                    adapter.notifyDataSetChanged();
                 }, throwable -> {
                     Toast.makeText(getContext(), "请求数据出错:" + throwable.getMessage(), Toast.LENGTH_SHORT).show();
                 });
