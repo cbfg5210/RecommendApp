@@ -24,11 +24,13 @@ import io.reactivex.schedulers.Schedulers;
 public class RecommendAppProxy {
     private static final String LAST_PULL_TIME = "lastPullTime";
 
+    private Context mContext;
     private SharedPreferences sharedPreferences;
     private RecommendAppDao mRecommendAppDao;
     private boolean hasRecommendApps;
 
     public RecommendAppProxy(Context context) {
+        mContext = context;
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         mRecommendAppDao = RecommendDatabase.getInstance(context).recommendAppDao();
     }
@@ -58,8 +60,9 @@ public class RecommendAppProxy {
         //刷新数据
         return Observable
                 .create((@NonNull ObservableEmitter<List<RecommendApp>> e) -> {
-                    String result = BmobUtils.findBQL("select * from RecommendApp");
-                    Log.e("MainActivity", "---pullRecommendApps---: result=" + result);
+                    String bql = String.format("select * from RecommendApp where packageName!='%s'", mContext.getPackageName());
+                    String result = BmobUtils.findBQL(bql);
+                    Log.e("RecommendAppProxy", "pullRecommendApps: result=" + result);
 
                     if (result.contains("appName")) {
                         RecommendAppResult recommendAppResult = new Gson().fromJson(result, RecommendAppResult.class);
