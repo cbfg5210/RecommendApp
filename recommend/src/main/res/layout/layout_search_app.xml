@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:clearImageRes="@drawable/svg_clear_input"
-        app:searchImageRes="@drawable/svg_search"/>
+        app:searchImageRes="@drawable/svg_search_icon"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rvSearchApps"
