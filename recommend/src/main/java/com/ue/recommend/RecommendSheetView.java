@@ -3,11 +3,11 @@ package com.ue.recommend;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -312,7 +312,7 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
     }
 
     public void addBannerAd(View bannerView) {
-        bannerView.setBackgroundColor(Color.WHITE);
+        bannerView.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.col_sheet_list));
         vgSheetContainer.addView(bannerView);
     }
 

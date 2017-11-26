@@ -7,4 +7,5 @@
     <color name="col_eaeaea">#eaeaea</color>
     <color name="black">#000000</color>
     <color name="svg_color">#000000</color>
+    <color name="col_sheet_list">#dcedc8</color>
 </resources>
