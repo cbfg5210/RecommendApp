@@ -18,41 +18,44 @@
         android:layout_marginRight="16dp"
         android:orientation="vertical">
 
-        <android.support.v7.widget.AppCompatTextView
-            android:id="@+id/vgListHeader"
+        <FrameLayout
+            android:id="@+id/vgSheetHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_recommend_sheet_title"
-            android:drawableLeft="@drawable/svg_recommend_wrapper"
-            android:drawablePadding="10dp"
-            android:gravity="center_vertical"
-            android:paddingBottom="15dp"
-            android:paddingLeft="15dp"
-            android:paddingTop="15dp"
-            android:text="@string/recommend_app"
-            android:textColor="@color/col_cc000000"
-            android:textSize="15sp"/>
+            android:padding="15dp">
 
-        <com.ue.recommend.SearchPanelView
-            android:id="@+id/spvSearchPanel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:clearImageRes="@drawable/svg_clear_input"
-            app:searchImageRes="@drawable/svg_search"/>
+            <TextView
+                android:id="@+id/tvSheetTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/sel_switch_title"
+                android:drawablePadding="10dp"
+                android:gravity="center_vertical"
+                android:text="@string/recommend_app"
+                android:textColor="@color/col_cc000000"
+                android:textSize="15sp"/>
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/rvRecommendApps"
+            <ImageView
+                android:id="@+id/ivSheetSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right|center_vertical"
+                app:srcCompat="@drawable/sel_switch_action"/>
+        </FrameLayout>
+
+        <ViewStub
+            android:id="@+id/vsRecommendApps"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:background="@color/white"
-            android:clipToPadding="false"
-            android:orientation="vertical"
-            android:overScrollMode="never"
-            android:paddingBottom="10dp"
-            android:paddingTop="5dp"
-            android:scrollbars="none"
-            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
-            tools:listitem="@layout/item_recommend_app"/>
+            android:layout_height="match_parent"
+            android:inflatedId="@+id/rvRecommendApps"
+            android:layout="@layout/layout_recommend_app"/>
+
+        <ViewStub
+            android:id="@+id/vsSearchApps"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:inflatedId="@+id/vgSearchApps"
+            android:layout="@layout/layout_search_app"/>
     </LinearLayout>
 </FrameLayout>

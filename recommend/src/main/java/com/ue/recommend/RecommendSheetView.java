@@ -11,10 +11,11 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.ue.adapterdelegate.Item;
 import com.ue.recommend.adapter.RecommendAppAdapter;
 import com.ue.recommend.model.RecommendApp;
 import com.ue.recommend.util.RecommendAppProxy;
@@ -30,14 +31,19 @@ import static android.support.design.widget.BottomSheetBehavior.STATE_EXPANDED;
 
 public class RecommendSheetView extends CoordinatorLayout implements View.OnClickListener {
     private ViewGroup vgMainBottomSheet;
-    private RecyclerView rvRecommendApps;
     private ViewGroup vgSheetContentPanel;
-    private View vgListHeader;
+
+    private View vgSheetHeader;
+    private TextView tvSheetTitle;
+    private View ivSheetSwitch;
+
+    private RecyclerView rvRecommendApps;
+
+    private View vgSearchApps;
     private SearchPanelView spvSearchPanel;
+    private RecyclerView rvSearchApps;
 
     private BottomSheetBehavior bottomSheetBehavior;
-    private RecommendAppAdapter adapter;
-    private List<Item> mRecommendApps;
 
     private RecommendAppProxy mRecommendAppProxy;
     private Disposable showDisposable;
@@ -64,15 +70,13 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
         super.onFinishInflate();
 
         vgMainBottomSheet = findViewById(R.id.vgMainBottomSheet);
-        rvRecommendApps = findViewById(R.id.rvRecommendApps);
         vgSheetContentPanel = findViewById(R.id.vgSheetContentPanel);
-        vgListHeader = findViewById(R.id.vgListHeader);
-        spvSearchPanel = findViewById(R.id.spvSearchPanel);
-        spvSearchPanel.setSearchPanelListener(input -> {
-            searchApps(input);
-        });
+        vgSheetHeader = findViewById(R.id.vgSheetHeader);
+        tvSheetTitle = findViewById(R.id.tvSheetTitle);
+        ivSheetSwitch = findViewById(R.id.ivSheetSwitch);
 
-        vgListHeader.setOnClickListener(this);
+        ivSheetSwitch.setOnClickListener(this);
+        vgSheetHeader.setOnClickListener(this);
 
         bottomSheetBehavior = BottomSheetBehavior.from(vgMainBottomSheet);
         bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
@@ -80,11 +84,6 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
                 if (newState == STATE_COLLAPSED) {
                     hideKeyBoard();
-                    if (mRecommendApps != null && mRecommendApps.size() > 0) {
-                        adapter.getItems().clear();
-                        adapter.getItems().addAll(mRecommendApps);
-                        adapter.notifyDataSetChanged();
-                    }
                 }
             }
 
@@ -92,29 +91,33 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
             }
         });
-        //adapter初始化的时候传入new ArrayList，后续就不用判断items是否为null了
-        adapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
-        rvRecommendApps.setAdapter(adapter);
+
+        setupData();
+    }
+
+    private void setupData() {
+        switchSheetContent(true);
 
         mRecommendAppProxy = new RecommendAppProxy(getContext());
         //get recommended apps saved in local
         showDisposable = mRecommendAppProxy.getLocalRecommendApps()
                 .subscribe(recommendApps -> {
                     if (getContext() != null) {
-                        mRecommendApps = new ArrayList<>(recommendApps);
-                        adapter.getItems().addAll(0, mRecommendApps);
+                        RecommendAppAdapter adapter = (RecommendAppAdapter) rvRecommendApps.getAdapter();
+                        adapter.getItems().addAll(recommendApps);
                         adapter.notifyDataSetChanged();
                     }
                 }, throwable -> {
                     Toast.makeText(getContext(), "读取本地数据出错:" + throwable.getMessage(), Toast.LENGTH_SHORT).show();
                 });
+
         //pull recommended apps from server
         Observable<List<RecommendApp>> pullObservable = mRecommendAppProxy.pullRecommendApps();
         if (pullObservable != null) {
             pullDisposable = pullObservable.subscribe(recommendApps -> {
                 if (getContext() != null) {
-                    mRecommendApps = new ArrayList<>(recommendApps);
-                    adapter.getItems().addAll(0, mRecommendApps);
+                    RecommendAppAdapter adapter = (RecommendAppAdapter) rvRecommendApps.getAdapter();
+                    adapter.getItems().addAll(0, recommendApps);
                     adapter.notifyDataSetChanged();
                 }
             }, throwable -> {
@@ -127,7 +130,7 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
         if (inputManager == null) {
             inputManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         }
-        inputManager.hideSoftInputFromWindow(spvSearchPanel.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        inputManager.hideSoftInputFromWindow(tvSheetTitle.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
     }
 
     public void addBannerAd(View bannerView) {
@@ -146,11 +149,63 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
     @Override
     public void onClick(View view) {
         int viewId = view.getId();
-        if (viewId == R.id.vgListHeader) {
-            int newState = bottomSheetBehavior.getState() == STATE_COLLAPSED ? STATE_EXPANDED : STATE_COLLAPSED;
-            bottomSheetBehavior.setState(newState);
+        if (viewId == R.id.vgSheetHeader) {
+            if (bottomSheetBehavior.getState() == STATE_COLLAPSED) {
+                bottomSheetBehavior.setState(STATE_EXPANDED);
+            }
             return;
         }
+        if (viewId == R.id.ivSheetSwitch) {
+            switchSheetContent(!ivSheetSwitch.isSelected());
+            return;
+        }
+    }
+
+    private void switchSheetContent(boolean switchRecommend) {
+        ivSheetSwitch.setSelected(switchRecommend);
+        tvSheetTitle.setSelected(switchRecommend);
+
+        if (switchRecommend) {
+            tvSheetTitle.setText(R.string.recommend_app);
+            if (rvRecommendApps == null) {
+                initSheetContent(true);
+            }
+            rvRecommendApps.setVisibility(View.VISIBLE);
+            if (vgSearchApps != null) {
+                vgSearchApps.setVisibility(View.GONE);
+            }
+            return;
+        }
+        /*switch search part*/
+        tvSheetTitle.setText(R.string.search_app);
+        if (vgSearchApps == null) {
+            initSheetContent(false);
+        }
+        vgSearchApps.setVisibility(View.VISIBLE);
+        if (rvRecommendApps != null) {
+            rvRecommendApps.setVisibility(View.GONE);
+        }
+    }
+
+    private void initSheetContent(boolean initRecommend) {
+        if (initRecommend) {
+            rvRecommendApps = (RecyclerView) ((ViewStub) findViewById(R.id.vsRecommendApps)).inflate();
+            //adapter初始化的时候传入new ArrayList，后续就不用判断items是否为null了
+            RecommendAppAdapter adapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
+            rvRecommendApps.setAdapter(adapter);
+            return;
+        }
+        /*init search part*/
+        vgSearchApps = ((ViewStub) findViewById(R.id.vsSearchApps)).inflate();
+        spvSearchPanel = findViewById(R.id.spvSearchPanel);
+        rvSearchApps = findViewById(R.id.rvSearchApps);
+        //adapter初始化的时候传入new ArrayList，后续就不用判断items是否为null了
+        RecommendAppAdapter adapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
+        rvSearchApps.setAdapter(adapter);
+
+        spvSearchPanel.setSearchPanelListener(input -> {
+            searchApps(input);
+        });
     }
 
     private void searchApps(String keyword) {
@@ -161,6 +216,7 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
         dispose(searchDisposable);
         searchDisposable = mRecommendAppProxy.searchApps(keyword)
                 .subscribe(searchAppDetails -> {
+                    RecommendAppAdapter adapter = (RecommendAppAdapter) rvSearchApps.getAdapter();
                     adapter.getItems().clear();
                     adapter.getItems().addAll(searchAppDetails);
                     adapter.notifyDataSetChanged();

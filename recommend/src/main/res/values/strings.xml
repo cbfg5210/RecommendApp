@@ -1,4 +1,5 @@
 <resources>
     <string name="recommend_app">Recommended Apps</string>
+    <string name="search_app">Search Apps</string>
     <string name="error_open_browser">Sorry!Failed to open the browser on your device.</string>
 </resources>
