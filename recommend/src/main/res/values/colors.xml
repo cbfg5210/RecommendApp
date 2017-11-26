@@ -4,4 +4,6 @@
     <color name="col_99000000">#99000000</color>
     <color name="white">#ffffff</color>
     <color name="col_cccc99">#cccc99</color>
+    <color name="col_eaeaea">#eaeaea</color>
+    <color name="black">#000000</color>
 </resources>

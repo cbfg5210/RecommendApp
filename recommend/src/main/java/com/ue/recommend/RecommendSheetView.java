@@ -12,8 +12,6 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import com.ue.adapterdelegate.Item;
@@ -35,8 +33,7 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
     private RecyclerView rvRecommendApps;
     private ViewGroup vgSheetContentPanel;
     private View vgListHeader;
-    private EditText etKeyword;
-    private Button btnSearch;
+    private SearchPanelView spvSearchPanel;
 
     private BottomSheetBehavior bottomSheetBehavior;
     private RecommendAppAdapter adapter;
@@ -70,11 +67,12 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
         rvRecommendApps = findViewById(R.id.rvRecommendApps);
         vgSheetContentPanel = findViewById(R.id.vgSheetContentPanel);
         vgListHeader = findViewById(R.id.vgListHeader);
-        etKeyword = findViewById(R.id.etKeyword);
-        btnSearch = findViewById(R.id.btnSearch);
+        spvSearchPanel = findViewById(R.id.spvSearchPanel);
+        spvSearchPanel.setSearchPanelListener(input -> {
+            searchApps(input);
+        });
 
         vgListHeader.setOnClickListener(this);
-        btnSearch.setOnClickListener(this);
 
         bottomSheetBehavior = BottomSheetBehavior.from(vgMainBottomSheet);
         bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
@@ -129,7 +127,7 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
         if (inputManager == null) {
             inputManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         }
-        inputManager.hideSoftInputFromWindow(etKeyword.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        inputManager.hideSoftInputFromWindow(spvSearchPanel.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
     }
 
     public void addBannerAd(View bannerView) {
@@ -153,14 +151,9 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
             bottomSheetBehavior.setState(newState);
             return;
         }
-        if (viewId == R.id.btnSearch) {
-            searchApps();
-            return;
-        }
     }
 
-    private void searchApps() {
-        String keyword = etKeyword.getText().toString().trim();
+    private void searchApps(String keyword) {
         if (TextUtils.isEmpty(keyword)) {
             Toast.makeText(getContext(), "please input keyword", Toast.LENGTH_SHORT).show();
             return;

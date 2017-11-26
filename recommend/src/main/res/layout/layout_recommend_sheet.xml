@@ -33,24 +33,12 @@
             android:textColor="@color/col_cc000000"
             android:textSize="15sp"/>
 
-        <LinearLayout
+        <com.ue.recommend.SearchPanelView
+            android:id="@+id/spvSearchPanel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <EditText
-                android:id="@+id/etKeyword"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="搜你所想"/>
-
-            <Button
-                android:id="@+id/btnSearch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Search"/>
-        </LinearLayout>
+            app:clearImageRes="@drawable/svg_clear_input"
+            app:searchImageRes="@drawable/svg_search"/>
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/rvRecommendApps"
