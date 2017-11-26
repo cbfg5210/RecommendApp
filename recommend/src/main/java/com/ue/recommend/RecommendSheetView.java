@@ -8,7 +8,6 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -127,7 +126,6 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
                 .create((ObservableEmitter<List<RecommendApp>> e) -> {
                     //从本地获取数据
                     List<RecommendApp> recommendApps = mRecommendAppDao.getRecommendApps();
-                    Log.e("RecommendSheetView", "setupData: local data=" + recommendApps);
                     boolean hasRecommendApps = (recommendApps != null && recommendApps.size() > 0);
                     if (hasRecommendApps) {
                         e.onNext(recommendApps);
@@ -196,7 +194,7 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
         searchDisposable = Observable
                 .create((ObservableEmitter<List<SearchAppDetail>> e) -> {
                     String result = BmobUtils.getInstance().search(keyword).trim();
-                    Log.e("RecommendAppProxy", "searchApps: result=" + result);
+                    Log.e("RecommendSheetView", "searchApps: result=" + result);
 
                     boolean hasResults = false;
                     if (result.contains("apps")) {
@@ -339,7 +337,17 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
     }
 
     private boolean isViewValid() {
-        return (getContext() != null && ViewCompat.isAttachedToWindow(this));
+        Context context = getContext();
+        if (context == null) {
+            return false;
+        }
+        if (context instanceof Activity) {
+            Activity activity = (Activity) context;
+            if (activity.isFinishing()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void dispose(Disposable disposable) {

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Process;
 import android.support.v7.app.AppCompatDelegate;
 
+import com.squareup.leakcanary.LeakCanary;
 import com.ue.recommend.util.BmobUtils;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public class ReleaseApplication extends Application {
     /**
      */
     public void initDebugTools() {
+        LeakCanary.install(this);
     }
 
     private String getProcessName(Context context) {
