@@ -1,92 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/vgMainBottomSheet"
+    android:id="@+id/vgSheetContainer"
     android:layout_width="match_parent"
     android:layout_height="500dp"
+    android:layout_marginLeft="16dp"
+    android:layout_marginRight="16dp"
+    android:orientation="vertical"
     app:behavior_hideable="false"
     app:behavior_peekHeight="100dp"
     app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
 
-    <LinearLayout
-        android:id="@+id/vgSheetContentPanel"
+    <FrameLayout
+        android:id="@+id/vgSheetHeader"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_recommend_sheet_title"
+        android:padding="15dp">
 
-        <FrameLayout
-            android:id="@+id/vgSheetHeader"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tvSheetTitle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_recommend_sheet_title"
-            android:padding="15dp">
+            android:drawableLeft="@drawable/sel_switch_title"
+            android:drawablePadding="10dp"
+            android:gravity="center_vertical"
+            android:text="@string/recommend_app"
+            android:textColor="@color/col_cc000000"
+            android:textSize="15sp"/>
 
-            <TextView
-                android:id="@+id/tvSheetTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:drawableLeft="@drawable/sel_switch_title"
-                android:drawablePadding="10dp"
-                android:gravity="center_vertical"
-                android:text="@string/recommend_app"
-                android:textColor="@color/col_cc000000"
-                android:textSize="15sp"/>
+        <ImageView
+            android:id="@+id/ivSheetSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right|center_vertical"
+            app:srcCompat="@drawable/sel_switch_action"/>
+    </FrameLayout>
 
-            <ImageView
-                android:id="@+id/ivSheetSwitch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right|center_vertical"
-                app:srcCompat="@drawable/sel_switch_action"/>
-        </FrameLayout>
-
-        <FrameLayout
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <!--recommend-->
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rvRecommendApps"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/rvRecommendApps"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/white"
-                android:clipToPadding="false"
-                android:orientation="vertical"
-                android:overScrollMode="never"
-                android:paddingBottom="10dp"
-                android:paddingTop="5dp"
-                app:layoutManager="android.support.v7.widget.LinearLayoutManager"/>
-
-            <LinearLayout
-                android:id="@+id/vgSearchPanel"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-
-                <com.ue.recommend.SearchPanelView
-                    android:id="@+id/spvSearchView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:clearImageRes="@drawable/svg_clear_input"
-                    app:searchImageRes="@drawable/svg_search"/>
-
-                <android.support.v7.widget.RecyclerView
-                    android:id="@+id/rvSearchApps"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@color/white"
-                    android:clipToPadding="false"
-                    android:orientation="vertical"
-                    android:overScrollMode="never"
-                    android:paddingBottom="10dp"
-                    android:paddingTop="5dp"
-                    android:scrollbars="none"
-                    app:layoutManager="android.support.v7.widget.LinearLayoutManager"
-                    tools:listitem="@layout/item_recommend_app"/>
-            </LinearLayout>
-        </FrameLayout>
-    </LinearLayout>
-</FrameLayout>
+            android:layout_height="match_parent"
+            android:background="@color/white"
+            android:clipToPadding="false"
+            android:orientation="vertical"
+            android:overScrollMode="never"
+            android:paddingBottom="10dp"
+            android:paddingTop="5dp"
+            app:layoutManager="android.support.v7.widget.LinearLayoutManager"/>
+        <!--search-->
+        <ViewStub
+            android:id="@+id/vsSearchAppPanel"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:inflatedId="@+id/vgSearchPanel"
+            android:layout="@layout/layout_search_app"/>
+        <!--progress-->
+        <ViewStub
+            android:id="@+id/vsProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:inflatedId="@+id/pbPullProgress"
+            android:layout="@layout/layout_progress"/>
+        <!--empty-->
+        <ViewStub
+            android:id="@+id/vsNoApps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:inflatedId="@+id/vgNoApps"
+            android:layout="@layout/layout_no_apps"/>
+    </FrameLayout>
+</LinearLayout>
