@@ -3,4 +3,8 @@
     <string name="search_app">Search Apps</string>
     <string name="error_open_browser">Sorry!Failed to open the browser on your device.</string>
     <string name="input_app_name">请输入应用名称</string>
+    <string name="error_search">请求数据出错：</string>
+    <string name="search_no_results">T_T : 没有找到匹配的内容</string>
+    <string name="input_keyword">请输入搜索关键字</string>
+    <string name="no_recommend_app">T_T : 没有获取到数据</string>
 </resources>

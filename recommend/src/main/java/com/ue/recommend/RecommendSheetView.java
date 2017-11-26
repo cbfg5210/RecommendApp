@@ -2,13 +2,17 @@ package com.ue.recommend;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
@@ -18,19 +22,30 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ue.recommend.adapter.RecommendAppAdapter;
+import com.ue.recommend.db.RecommendAppDao;
+import com.ue.recommend.db.RecommendDatabase;
 import com.ue.recommend.model.RecommendApp;
-import com.ue.recommend.util.RecommendAppProxy;
+import com.ue.recommend.model.RecommendAppResult;
+import com.ue.recommend.model.SearchAppDetail;
+import com.ue.recommend.model.SearchAppResult;
+import com.ue.recommend.util.BmobUtils;
+import com.ue.recommend.util.GsonHolder;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 import static android.support.design.widget.BottomSheetBehavior.STATE_COLLAPSED;
 import static android.support.design.widget.BottomSheetBehavior.STATE_EXPANDED;
 
 public class RecommendSheetView extends CoordinatorLayout implements View.OnClickListener {
+    private static final String LAST_PULL_TIME = "lastPullTime";
+
     private ViewGroup vgSheetContainer;
 
     private View vgSheetHeader;
@@ -38,10 +53,12 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
     private View ivSheetSwitch;
 
     private RecyclerView rvRecommendApps;
+    private RecommendAppAdapter recommendAdapter;
 
     private View vgSearchPanel;
     private SearchPanelView spvSearchPanel;
     private RecyclerView rvSearchApps;
+    private RecommendAppAdapter searchAdapter;
 
     private ProgressBar pbPullProgress;
     private View vgNoApps;
@@ -49,9 +66,7 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
 
     private BottomSheetBehavior bottomSheetBehavior;
 
-    private RecommendAppProxy mRecommendAppProxy;
-    private Disposable showDisposable;
-    private Disposable pullDisposable;
+    private Disposable recommendDisposable;
     private Disposable searchDisposable;
 
     public RecommendSheetView(Context context) {
@@ -78,7 +93,7 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
 
         rvRecommendApps = findViewById(R.id.rvRecommendApps);
         //adapter初始化的时候传入new ArrayList，后续就不用判断items是否为null了
-        RecommendAppAdapter recommendAdapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
+        recommendAdapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
         rvRecommendApps.setAdapter(recommendAdapter);
 
         ivSheetSwitch.setOnClickListener(this);
@@ -98,56 +113,127 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
             }
         });
 
+        switchSheetContent(true);
         setupData();
     }
 
     private void setupData() {
-        switchSheetContent(true);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        RecommendAppDao mRecommendAppDao = RecommendDatabase.getInstance(getContext()).recommendAppDao();
 
-        mRecommendAppProxy = new RecommendAppProxy(getContext());
-        //get recommended apps saved in local
-        showDisposable = mRecommendAppProxy.getLocalRecommendApps()
-                .subscribe(recommendApps -> {
-                    if (getContext() != null) {
-                        RecommendAppAdapter adapter = (RecommendAppAdapter) rvRecommendApps.getAdapter();
-                        adapter.getItems().addAll(recommendApps);
-                        adapter.notifyDataSetChanged();
+        recommendDisposable = Observable
+                .create((ObservableEmitter<List<RecommendApp>> e) -> {
+                    //从本地获取数据
+                    List<RecommendApp> recommendApps = mRecommendAppDao.getRecommendApps();
+                    Log.e("RecommendSheetView", "setupData: local data=" + recommendApps);
+                    boolean hasRecommendApps = (recommendApps != null && recommendApps.size() > 0);
+                    if (hasRecommendApps) {
+                        e.onNext(recommendApps);
                     }
+                    //更新数据
+                    long cacheTime = sharedPreferences.getLong(LAST_PULL_TIME, 0);
+                    if (System.currentTimeMillis() - cacheTime > 86400000) {
+                        //24*60*60*1000=86400000,缓存时间大于一天才重新获取数据
+                        String bql = String.format("select * from RecommendApp where packageName!='%s'", getContext().getPackageName());
+                        String result = BmobUtils.getInstance().findBQL(bql);
+                        Log.e("RecommendSheetView", "setupData: server data=" + result);
+
+                        if (result.contains("appName")) {
+                            RecommendAppResult recommendAppResult = GsonHolder.getGson().fromJson(result, RecommendAppResult.class);
+                            mRecommendAppDao.saveRecommendApps(recommendAppResult.results);
+
+                            sharedPreferences.edit()
+                                    .putLong(LAST_PULL_TIME, System.currentTimeMillis())
+                                    .apply();
+
+                            if (!hasRecommendApps) {
+                                hasRecommendApps = true;
+                                e.onNext(recommendAppResult.results);
+                            }
+                        }
+                    }
+                    if (!hasRecommendApps) {
+                        e.onNext(new ArrayList<>());
+                    }
+                    e.onComplete();
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(recommendApps -> {
+                    if (!isViewValid()) {
+                        return;
+                    }
+                    if (recommendApps.size() == 0) {
+                        showNoApps();
+                        tvNoAppReason.setText(getContext().getString(R.string.no_recommend_app));
+                        return;
+                    }
+                    recommendAdapter.getItems().addAll(recommendApps);
+                    recommendAdapter.notifyDataSetChanged();
+
                 }, throwable -> {
-                    Toast.makeText(getContext(), "读取本地数据出错:" + throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                    if (!isViewValid()) {
+                        return;
+                    }
+                    if (recommendAdapter.getItems().size() == 0) {
+                        showNoApps();
+                        tvNoAppReason.setText(getContext().getString(R.string.error_search) + throwable.getMessage());
+                    }
                 });
+    }
 
-        //pull recommended apps from server
-        Observable<List<RecommendApp>> pullObservable = mRecommendAppProxy.pullRecommendApps();
-        if (pullObservable != null) {
-            pullDisposable = pullObservable.subscribe(recommendApps -> {
-                if (getContext() != null) {
-                    RecommendAppAdapter adapter = (RecommendAppAdapter) rvRecommendApps.getAdapter();
-                    adapter.getItems().addAll(0, recommendApps);
-                    adapter.notifyDataSetChanged();
-                }
-            }, throwable -> {
-                Toast.makeText(getContext(), "请求数据出错:" + throwable.getMessage(), Toast.LENGTH_SHORT).show();
-            });
+    private void searchApps(String keyword) {
+        if (TextUtils.isEmpty(keyword)) {
+            Toast.makeText(getContext(), R.string.input_keyword, Toast.LENGTH_SHORT).show();
+            return;
         }
-    }
+        hideKeyBoard();
+        switchProgress(true);
+        dispose(searchDisposable);
 
-    private void hideKeyBoard() {
-        ((InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE))
-                .hideSoftInputFromWindow(tvSheetTitle.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-    }
+        searchDisposable = Observable
+                .create((ObservableEmitter<List<SearchAppDetail>> e) -> {
+                    String result = BmobUtils.getInstance().search(keyword).trim();
+                    Log.e("RecommendAppProxy", "searchApps: result=" + result);
 
-    public void addBannerAd(View bannerView) {
-        bannerView.setBackgroundColor(Color.WHITE);
-        vgSheetContainer.addView(bannerView);
-    }
-
-    public int getState() {
-        return bottomSheetBehavior.getState();
-    }
-
-    public void hideBottomSheet() {
-        bottomSheetBehavior.setState(STATE_COLLAPSED);
+                    boolean hasResults = false;
+                    if (result.contains("apps")) {
+                        if (result.endsWith(";")) {
+                            result = result.substring(0, result.length() - 1);
+                        }
+                        SearchAppResult searchAppResult = GsonHolder.getGson().fromJson(result, SearchAppResult.class);
+                        if (searchAppResult != null && searchAppResult.apps != null) {
+                            hasResults = true;
+                            e.onNext(searchAppResult.apps);
+                        }
+                    }
+                    if (!hasResults) {
+                        e.onNext(new ArrayList<>());
+                    }
+                    e.onComplete();
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(searchAppDetails -> {
+                    if (!isViewValid()) {
+                        return;
+                    }
+                    switchProgress(false);
+                    if (searchAppDetails.size() == 0) {
+                        showNoApps();
+                        return;
+                    }
+                    searchAdapter.getItems().clear();
+                    searchAdapter.getItems().addAll(searchAppDetails);
+                    searchAdapter.notifyDataSetChanged();
+                }, throwable -> {
+                    if (!isViewValid()) {
+                        return;
+                    }
+                    switchProgress(false);
+                    showNoApps();
+                    tvNoAppReason.setText(getContext().getString(R.string.error_search) + throwable.getMessage());
+                });
     }
 
     @Override
@@ -186,7 +272,7 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
             spvSearchPanel = findViewById(R.id.spvSearchApp);
             rvSearchApps = findViewById(R.id.rvSearchApps);
             //adapter初始化的时候传入new ArrayList，后续就不用判断items是否为null了
-            RecommendAppAdapter searchAdapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
+            searchAdapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
             rvSearchApps.setAdapter(searchAdapter);
 
             spvSearchPanel.setSearchPanelListener(input -> {
@@ -197,29 +283,6 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
         tvSheetTitle.setText(R.string.search_app);
         vgSearchPanel.setVisibility(View.VISIBLE);
         rvRecommendApps.setVisibility(View.GONE);
-    }
-
-    private void searchApps(String keyword) {
-        if (TextUtils.isEmpty(keyword)) {
-            Toast.makeText(getContext(), "please input keyword", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        hideKeyBoard();
-        switchProgress(true);
-        dispose(searchDisposable);
-        searchDisposable = mRecommendAppProxy.searchApps(keyword)
-                .subscribe(searchAppDetails -> {
-                    pbPullProgress.setVisibility(View.GONE);
-
-                    RecommendAppAdapter adapter = (RecommendAppAdapter) rvSearchApps.getAdapter();
-                    adapter.getItems().clear();
-                    adapter.getItems().addAll(searchAppDetails);
-                    adapter.notifyDataSetChanged();
-                }, throwable -> {
-                    switchProgress(false);
-                    showNoApps();
-                    tvNoAppReason.setText("请求数据出错:" + throwable.getMessage());
-                });
     }
 
     private void switchProgress(boolean isShow) {
@@ -248,12 +311,33 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
         vgNoApps.setVisibility(View.VISIBLE);
     }
 
+    public void addBannerAd(View bannerView) {
+        bannerView.setBackgroundColor(Color.WHITE);
+        vgSheetContainer.addView(bannerView);
+    }
+
+    public int getState() {
+        return bottomSheetBehavior.getState();
+    }
+
+    public void hideBottomSheet() {
+        bottomSheetBehavior.setState(STATE_COLLAPSED);
+    }
+
     @Override
     public void onDetachedFromWindow() {
-        dispose(showDisposable);
-        dispose(pullDisposable);
+        dispose(recommendDisposable);
         dispose(searchDisposable);
         super.onDetachedFromWindow();
+    }
+
+    private void hideKeyBoard() {
+        ((InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE))
+                .hideSoftInputFromWindow(tvSheetTitle.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+    }
+
+    private boolean isViewValid() {
+        return (getContext() != null && ViewCompat.isAttachedToWindow(this));
     }
 
     private void dispose(Disposable disposable) {
