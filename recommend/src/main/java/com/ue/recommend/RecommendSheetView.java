@@ -121,6 +121,8 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         RecommendAppDao mRecommendAppDao = RecommendDatabase.getInstance(getContext()).recommendAppDao();
 
+        switchProgress(true);
+        dispose(recommendDisposable);
         recommendDisposable = Observable
                 .create((ObservableEmitter<List<RecommendApp>> e) -> {
                     //从本地获取数据
@@ -163,6 +165,7 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
                     if (!isViewValid()) {
                         return;
                     }
+                    switchProgress(false);
                     if (recommendApps.size() == 0) {
                         showNoApps();
                         tvNoAppReason.setText(getContext().getString(R.string.no_recommend_app));
@@ -172,13 +175,12 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
                     recommendAdapter.notifyDataSetChanged();
 
                 }, throwable -> {
-                    if (!isViewValid()) {
+                    if (!isViewValid() || recommendAdapter.getItems().size() > 0) {
                         return;
                     }
-                    if (recommendAdapter.getItems().size() == 0) {
-                        showNoApps();
-                        tvNoAppReason.setText(getContext().getString(R.string.error_search) + throwable.getMessage());
-                    }
+                    switchProgress(false);
+                    showNoApps();
+                    tvNoAppReason.setText(getContext().getString(R.string.error_search) + throwable.getMessage());
                 });
     }
 
