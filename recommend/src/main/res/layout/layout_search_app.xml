@@ -8,7 +8,7 @@
     android:orientation="vertical">
 
     <com.ue.recommend.SearchPanelView
-        android:id="@+id/spvSearchPanel"
+        android:id="@+id/spvSearchView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:clearImageRes="@drawable/svg_clear_input"

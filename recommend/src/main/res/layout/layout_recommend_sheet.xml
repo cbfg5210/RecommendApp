@@ -44,18 +44,49 @@
                 app:srcCompat="@drawable/sel_switch_action"/>
         </FrameLayout>
 
-        <ViewStub
-            android:id="@+id/vsRecommendApps"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:inflatedId="@+id/rvRecommendApps"
-            android:layout="@layout/layout_recommend_app"/>
+            android:layout_height="match_parent">
 
-        <ViewStub
-            android:id="@+id/vsSearchApps"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:inflatedId="@+id/vgSearchApps"
-            android:layout="@layout/layout_search_app"/>
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rvRecommendApps"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/white"
+                android:clipToPadding="false"
+                android:orientation="vertical"
+                android:overScrollMode="never"
+                android:paddingBottom="10dp"
+                android:paddingTop="5dp"
+                app:layoutManager="android.support.v7.widget.LinearLayoutManager"/>
+
+            <LinearLayout
+                android:id="@+id/vgSearchPanel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <com.ue.recommend.SearchPanelView
+                    android:id="@+id/spvSearchView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:clearImageRes="@drawable/svg_clear_input"
+                    app:searchImageRes="@drawable/svg_search"/>
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/rvSearchApps"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/white"
+                    android:clipToPadding="false"
+                    android:orientation="vertical"
+                    android:overScrollMode="never"
+                    android:paddingBottom="10dp"
+                    android:paddingTop="5dp"
+                    android:scrollbars="none"
+                    app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_recommend_app"/>
+            </LinearLayout>
+        </FrameLayout>
     </LinearLayout>
 </FrameLayout>

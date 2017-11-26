@@ -11,7 +11,6 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewStub;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,7 +38,7 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
 
     private RecyclerView rvRecommendApps;
 
-    private View vgSearchApps;
+    private View vgSearchPanel;
     private SearchPanelView spvSearchPanel;
     private RecyclerView rvSearchApps;
 
@@ -74,6 +73,23 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
         vgSheetHeader = findViewById(R.id.vgSheetHeader);
         tvSheetTitle = findViewById(R.id.tvSheetTitle);
         ivSheetSwitch = findViewById(R.id.ivSheetSwitch);
+
+        rvRecommendApps = findViewById(R.id.rvRecommendApps);
+        //adapter初始化的时候传入new ArrayList，后续就不用判断items是否为null了
+        RecommendAppAdapter recommendAdapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
+        rvRecommendApps.setAdapter(recommendAdapter);
+
+        /*init search part*/
+        vgSearchPanel = findViewById(R.id.vgSearchPanel);
+        spvSearchPanel = findViewById(R.id.spvSearchView);
+        rvSearchApps = findViewById(R.id.rvSearchApps);
+        //adapter初始化的时候传入new ArrayList，后续就不用判断items是否为null了
+        RecommendAppAdapter searchAdapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
+        rvSearchApps.setAdapter(searchAdapter);
+
+        spvSearchPanel.setSearchPanelListener(input -> {
+            searchApps(input);
+        });
 
         ivSheetSwitch.setOnClickListener(this);
         vgSheetHeader.setOnClickListener(this);
@@ -167,45 +183,14 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
 
         if (switchRecommend) {
             tvSheetTitle.setText(R.string.recommend_app);
-            if (rvRecommendApps == null) {
-                initSheetContent(true);
-            }
             rvRecommendApps.setVisibility(View.VISIBLE);
-            if (vgSearchApps != null) {
-                vgSearchApps.setVisibility(View.GONE);
-            }
+            vgSearchPanel.setVisibility(View.GONE);
             return;
         }
         /*switch search part*/
         tvSheetTitle.setText(R.string.search_app);
-        if (vgSearchApps == null) {
-            initSheetContent(false);
-        }
-        vgSearchApps.setVisibility(View.VISIBLE);
-        if (rvRecommendApps != null) {
-            rvRecommendApps.setVisibility(View.GONE);
-        }
-    }
-
-    private void initSheetContent(boolean initRecommend) {
-        if (initRecommend) {
-            rvRecommendApps = (RecyclerView) ((ViewStub) findViewById(R.id.vsRecommendApps)).inflate();
-            //adapter初始化的时候传入new ArrayList，后续就不用判断items是否为null了
-            RecommendAppAdapter adapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
-            rvRecommendApps.setAdapter(adapter);
-            return;
-        }
-        /*init search part*/
-        vgSearchApps = ((ViewStub) findViewById(R.id.vsSearchApps)).inflate();
-        spvSearchPanel = findViewById(R.id.spvSearchPanel);
-        rvSearchApps = findViewById(R.id.rvSearchApps);
-        //adapter初始化的时候传入new ArrayList，后续就不用判断items是否为null了
-        RecommendAppAdapter adapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
-        rvSearchApps.setAdapter(adapter);
-
-        spvSearchPanel.setSearchPanelListener(input -> {
-            searchApps(input);
-        });
+        vgSearchPanel.setVisibility(View.VISIBLE);
+        rvRecommendApps.setVisibility(View.GONE);
     }
 
     private void searchApps(String keyword) {
