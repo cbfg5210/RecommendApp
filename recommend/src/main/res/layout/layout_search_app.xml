@@ -8,7 +8,7 @@
     android:background="@color/col_sheet_list"
     android:orientation="vertical">
 
-    <com.ue.recommend.SearchPanelView
+    <com.ue.recommend.widget.SearchPanelView
         android:id="@+id/spvSearchApp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

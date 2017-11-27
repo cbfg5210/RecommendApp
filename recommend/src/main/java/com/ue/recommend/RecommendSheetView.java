@@ -29,6 +29,8 @@ import com.ue.recommend.model.SearchAppDetail;
 import com.ue.recommend.model.SearchAppResult;
 import com.ue.recommend.util.BmobUtils;
 import com.ue.recommend.util.GsonHolder;
+import com.ue.recommend.widget.NBottomSheetBehavior;
+import com.ue.recommend.widget.SearchPanelView;
 
 import java.util.ArrayList;
 import java.util.List;

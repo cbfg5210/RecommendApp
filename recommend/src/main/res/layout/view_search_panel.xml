@@ -8,7 +8,7 @@
     android:orientation="horizontal"
     android:padding="8dp">
 
-    <com.ue.recommend.ClearEditText
+    <com.ue.recommend.widget.ClearEditText
         android:id="@+id/etSearchInput"
         android:layout_width="0dp"
         android:layout_height="match_parent"

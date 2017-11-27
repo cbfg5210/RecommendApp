@@ -1,4 +1,4 @@
-package com.ue.recommend;
+package com.ue.recommend.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -22,6 +22,8 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+
+import com.ue.recommend.R;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

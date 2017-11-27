@@ -10,7 +10,7 @@
     android:orientation="vertical"
     app:behavior_hideable="false"
     app:behavior_peekHeight="100dp"
-    app:layout_behavior="com.ue.recommend.NBottomSheetBehavior">
+    app:layout_behavior="com.ue.recommend.widget.NBottomSheetBehavior">
 
     <FrameLayout
         android:id="@+id/vgSheetHeader"

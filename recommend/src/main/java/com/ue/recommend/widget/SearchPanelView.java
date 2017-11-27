@@ -1,4 +1,4 @@
-package com.ue.recommend;
+package com.ue.recommend.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -8,6 +8,8 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+
+import com.ue.recommend.R;
 
 /**
  * Created by hawk on 2017/11/25.

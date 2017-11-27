@@ -1,4 +1,4 @@
-package com.ue.recommend;
+package com.ue.recommend.widget;
 
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
