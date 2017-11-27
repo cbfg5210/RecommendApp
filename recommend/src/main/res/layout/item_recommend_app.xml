@@ -2,7 +2,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tool="http://schemas.android.com/tools"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/vgAppInfoPanel"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -18,12 +18,13 @@
         android:id="@+id/ivAppIcon"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        tool:srcCompat="@drawable/svg_recommend"/>
+        tools:srcCompat="@drawable/svg_recommend"/>
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
         android:layout_weight="1"
         android:orientation="vertical">
 
@@ -31,7 +32,7 @@
             android:id="@+id/tvAppName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="app name"
+            tools:text="app name"
             android:textColor="@color/col_cc000000"
             android:textSize="16sp"/>
 
@@ -42,7 +43,7 @@
             android:layout_marginTop="5dp"
             android:ellipsize="end"
             android:maxLines="2"
-            android:text="app descriptionapp descriptionapp descriptionapp descriptionapp description"
+            tools:text="app descriptionapp descriptionapp descriptionapp descriptionapp description"
             android:textColor="@color/col_99000000"
             android:textSize="14sp"/>
     </LinearLayout>
