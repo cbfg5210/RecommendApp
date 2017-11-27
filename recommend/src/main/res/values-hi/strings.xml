@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="recommend_app">अनुशंसित ऐप्स</string>
+    <string name="search_app">खोज एप</string>
+    <string name="error_open_browser">क्षमा करें! अपने डिवाइस पर ब्राउज़र खोलने में विफल.</string>
+    <string name="input_app_name">कृपया ऐप नाम दर्ज करें.</string>
+    <string name="error_search">अनुरोध डेटा त्रुटि：</string>
+    <string name="search_no_results">T_T : कोई मेल नहीं मिला.</string>
+    <string name="input_keyword">कृपया खोज कीवर्ड दर्ज करे.ं</string>
+    <string name="no_recommend_app">T_T : डेटा नहीं मिला.</string>
+</resources>

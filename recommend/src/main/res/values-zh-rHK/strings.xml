@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="recommend_app">推薦應用</string>
+    <string name="search_app">搜索應用</string>
+    <string name="error_open_browser">抱歉，無法調用到本設備的瀏覽器打開頁面!</string>
+    <string name="input_app_name">請輸入應用名稱</string>
+    <string name="error_search">請求數據出錯：</string>
+    <string name="search_no_results">T_T : 沒有找到匹配的內容</string>
+    <string name="input_keyword">請輸入搜索關鍵字</string>
+    <string name="no_recommend_app">T_T : 沒有獲取到數據</string>
+</resources>
