@@ -5,13 +5,13 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
@@ -39,9 +39,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
-import static android.support.design.widget.BottomSheetBehavior.STATE_COLLAPSED;
-import static android.support.design.widget.BottomSheetBehavior.STATE_EXPANDED;
-
 public class RecommendSheetView extends CoordinatorLayout implements View.OnClickListener {
     private static final String LAST_PULL_TIME = "lastPullTime";
 
@@ -63,7 +60,7 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
     private View vgNoApps;
     private TextView tvNoAppReason;
 
-    private BottomSheetBehavior bottomSheetBehavior;
+    private NBottomSheetBehavior bottomSheetBehavior;
 
     private Disposable recommendDisposable;
     private Disposable searchDisposable;
@@ -85,24 +82,26 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        vgSheetContainer = findViewById(R.id.vgSheetContainer);
-        vgSheetHeader = findViewById(R.id.vgSheetHeader);
         tvSheetTitle = findViewById(R.id.tvSheetTitle);
+
+        vgSheetHeader = findViewById(R.id.vgSheetHeader);
+        vgSheetHeader.setOnClickListener(this);
+
         ivSheetSwitch = findViewById(R.id.ivSheetSwitch);
+        ivSheetSwitch.setOnClickListener(this);
 
         rvRecommendApps = findViewById(R.id.rvRecommendApps);
+        rvRecommendApps.addOnItemTouchListener(onItemTouchListener);
         //adapter初始化的时候传入new ArrayList，后续就不用判断items是否为null了
         recommendAdapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
         rvRecommendApps.setAdapter(recommendAdapter);
 
-        ivSheetSwitch.setOnClickListener(this);
-        vgSheetHeader.setOnClickListener(this);
-
-        bottomSheetBehavior = BottomSheetBehavior.from(vgSheetContainer);
-        bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+        vgSheetContainer = findViewById(R.id.vgSheetContainer);
+        bottomSheetBehavior = NBottomSheetBehavior.from(vgSheetContainer);
+        bottomSheetBehavior.setBottomSheetCallback(new NBottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                if (newState == STATE_COLLAPSED) {
+                if (newState == NBottomSheetBehavior.STATE_COLLAPSED) {
                     hideKeyBoard();
                 }
             }
@@ -111,7 +110,6 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
             }
         });
-
         switchSheetContent(true);
         setupData();
     }
@@ -240,14 +238,14 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
     public void onClick(View view) {
         int viewId = view.getId();
         if (viewId == R.id.vgSheetHeader) {
-            if (bottomSheetBehavior.getState() == STATE_COLLAPSED) {
-                bottomSheetBehavior.setState(STATE_EXPANDED);
+            if (bottomSheetBehavior.getState() == NBottomSheetBehavior.STATE_COLLAPSED) {
+                bottomSheetBehavior.setState(NBottomSheetBehavior.STATE_EXPANDED);
             }
             return;
         }
         if (viewId == R.id.ivSheetSwitch) {
-            if (bottomSheetBehavior.getState() == STATE_COLLAPSED) {
-                bottomSheetBehavior.setState(STATE_EXPANDED);
+            if (bottomSheetBehavior.getState() == NBottomSheetBehavior.STATE_COLLAPSED) {
+                bottomSheetBehavior.setState(NBottomSheetBehavior.STATE_EXPANDED);
             }
             switchSheetContent(!ivSheetSwitch.isSelected());
             return;
@@ -271,6 +269,7 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
             vgSearchPanel = ((ViewStub) findViewById(R.id.vsSearchAppPanel)).inflate();
             spvSearchPanel = findViewById(R.id.spvSearchApp);
             rvSearchApps = findViewById(R.id.rvSearchApps);
+            rvSearchApps.addOnItemTouchListener(onItemTouchListener);
             //adapter初始化的时候传入new ArrayList，后续就不用判断items是否为null了
             searchAdapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
             rvSearchApps.setAdapter(searchAdapter);
@@ -321,7 +320,7 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
     }
 
     public void hideBottomSheet() {
-        bottomSheetBehavior.setState(STATE_COLLAPSED);
+        bottomSheetBehavior.setState(NBottomSheetBehavior.STATE_COLLAPSED);
     }
 
     @Override
@@ -353,6 +352,34 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
     private void dispose(Disposable disposable) {
         if (disposable != null && !disposable.isDisposed()) {
             disposable.dispose();
+        }
+    }
+
+    RecyclerView.OnItemTouchListener onItemTouchListener = new RecyclerView.OnItemTouchListener() {
+        @Override
+        public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+            setScrollable(vgSheetContainer, rv);
+            return false;
+        }
+
+        @Override
+        public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+
+        }
+
+        @Override
+        public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+
+        }
+    };
+
+    private void setScrollable(View bottomSheet, RecyclerView recyclerView){
+        ViewGroup.LayoutParams params = bottomSheet.getLayoutParams();
+        if (params instanceof CoordinatorLayout.LayoutParams) {
+            CoordinatorLayout.LayoutParams coordinatorLayoutParams = (CoordinatorLayout.LayoutParams) params;
+            CoordinatorLayout.Behavior behavior = coordinatorLayoutParams.getBehavior();
+            if (behavior != null && behavior instanceof NBottomSheetBehavior)
+                ((NBottomSheetBehavior)behavior).setNestedScrollingChildRef(recyclerView);
         }
     }
 }
