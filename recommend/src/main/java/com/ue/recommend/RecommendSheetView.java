@@ -49,6 +49,9 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
     private Disposable recommendDisposable;
     private Disposable searchDisposable;
 
+    private boolean hasRecommends = true;
+    private boolean hasSearches = true;
+
     public RecommendSheetView(Context context) {
         this(context, null, 0);
     }
@@ -122,10 +125,12 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
                     }
                     switchProgress(false);
                     if (recommendApps.size() == 0) {
-                        showNoApps();
+                        hasRecommends = false;
+                        switchNoApps(false);
                         tvNoAppReason.setText(getContext().getString(R.string.no_recommend_app));
                         return;
                     }
+                    hasRecommends = true;
                     recommendAdapter.getItems().addAll(recommendApps);
                     recommendAdapter.notifyDataSetChanged();
 
@@ -133,8 +138,9 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
                     if (!isViewValid() || recommendAdapter.getItems().size() > 0) {
                         return;
                     }
+                    hasRecommends = false;
                     switchProgress(false);
-                    showNoApps();
+                    switchNoApps(false);
                     tvNoAppReason.setText(getContext().getString(R.string.error_search) + throwable.getMessage());
                 });
     }
@@ -155,9 +161,11 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
                     }
                     switchProgress(false);
                     if (searchAppDetails.size() == 0) {
-                        showNoApps();
+                        hasSearches = false;
+                        switchNoApps(false);
                         return;
                     }
+                    hasSearches = true;
                     searchAdapter.getItems().clear();
                     searchAdapter.getItems().addAll(searchAppDetails);
                     searchAdapter.notifyDataSetChanged();
@@ -165,8 +173,9 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
                     if (!isViewValid()) {
                         return;
                     }
+                    hasSearches = false;
                     switchProgress(false);
-                    showNoApps();
+                    switchNoApps(false);
                     tvNoAppReason.setText(getContext().getString(R.string.error_search) + throwable.getMessage());
                 });
     }
@@ -189,11 +198,12 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
         }
     }
 
-    private void switchSheetContent(boolean switchRecommend) {
-        ivSheetSwitch.setSelected(switchRecommend);
-        tvSheetTitle.setSelected(switchRecommend);
-
-        if (switchRecommend) {
+    private void switchSheetContent(boolean isRecommend) {
+        ivSheetSwitch.setSelected(isRecommend);
+        tvSheetTitle.setSelected(isRecommend);
+        //切换到推荐应用
+        if (isRecommend) {
+            switchNoApps(hasRecommends);
             tvSheetTitle.setText(R.string.recommend_app);
             rvRecommendApps.setVisibility(View.VISIBLE);
             if (vgSearchPanel != null) {
@@ -201,39 +211,36 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
             }
             return;
         }
+        //切换到搜索应用
+        switchNoApps(hasSearches);
         if (vgSearchPanel == null) {
             initSheetContent(false);
         }
-        /*switch search part*/
         tvSheetTitle.setText(R.string.search_app);
         vgSearchPanel.setVisibility(View.VISIBLE);
         rvRecommendApps.setVisibility(View.GONE);
     }
 
     private void switchProgress(boolean isShow) {
-        //hide progress
-        if (!isShow) {
-            pbPullProgress.setVisibility(View.GONE);
+        switchNoApps(true);
+        if (pbPullProgress == null) {
+            if (isShow) {
+                pbPullProgress = (ProgressBar) ((ViewStub) findViewById(R.id.vsProgressBar)).inflate();
+            }
             return;
         }
-        //show progress and hide vgNoApps
-        if (vgNoApps != null) {
-            vgNoApps.setVisibility(View.GONE);
-        }
-        if (pbPullProgress == null) {
-            pbPullProgress = (ProgressBar) ((ViewStub) findViewById(R.id.vsProgressBar)).inflate();
-        } else {
-            pbPullProgress.setVisibility(View.VISIBLE);
-        }
+        pbPullProgress.setVisibility(isShow ? View.VISIBLE : View.GONE);
     }
 
-    private void showNoApps() {
+    private void switchNoApps(boolean hasApp) {
         if (vgNoApps == null) {
-            vgNoApps = ((ViewStub) findViewById(R.id.vsNoApps)).inflate();
-            tvNoAppReason = findViewById(R.id.tvNoAppReason);
+            if (!hasApp) {
+                vgNoApps = ((ViewStub) findViewById(R.id.vsNoApps)).inflate();
+                tvNoAppReason = findViewById(R.id.tvNoAppReason);
+            }
             return;
         }
-        vgNoApps.setVisibility(View.VISIBLE);
+        vgNoApps.setVisibility(hasApp ? View.GONE : View.VISIBLE);
     }
 
     public void addBannerAd(View bannerView) {
