@@ -1,4 +1,8 @@
 apply plugin: 'com.android.library'
+// JitPack Maven
+apply plugin: 'com.github.dcendents.android-maven'
+// Your Group
+group = 'com.github.cbfg5210'
 
 android {
     compileSdkVersion androidCompileSdkVersion
@@ -6,7 +10,7 @@ android {
         minSdkVersion androidMinSdkVersion
         targetSdkVersion androidTargetSdkVersion
         versionCode 1
-        versionName "1.0"
+        versionName "0.1"
 
         vectorDrawables.useSupportLibrary = true
 
