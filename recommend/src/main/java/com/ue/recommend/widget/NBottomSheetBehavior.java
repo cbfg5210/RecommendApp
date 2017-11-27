@@ -61,7 +61,8 @@ public class NBottomSheetBehavior<V extends View> extends CoordinatorLayout.Beha
          *                    is between collapsed and expanded states and from -1 to 0 it is
          *                    between hidden and collapsed states.
          */
-        public abstract void onSlide(@NonNull View bottomSheet, float slideOffset);
+        public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+        }
     }
 
     /**

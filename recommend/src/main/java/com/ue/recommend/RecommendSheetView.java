@@ -2,15 +2,12 @@ package com.ue.recommend;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,32 +18,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ue.recommend.adapter.RecommendAppAdapter;
-import com.ue.recommend.db.RecommendAppDao;
-import com.ue.recommend.db.RecommendDatabase;
-import com.ue.recommend.model.RecommendApp;
-import com.ue.recommend.model.RecommendAppResult;
-import com.ue.recommend.model.SearchAppDetail;
-import com.ue.recommend.model.SearchAppResult;
-import com.ue.recommend.util.BmobUtils;
-import com.ue.recommend.util.GsonHolder;
 import com.ue.recommend.widget.NBottomSheetBehavior;
 import com.ue.recommend.widget.SearchPanelView;
 
 import java.util.ArrayList;
-import java.util.List;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
 
 public class RecommendSheetView extends CoordinatorLayout implements View.OnClickListener {
-    private static final String LAST_PULL_TIME = "lastPullTime";
-
     private ViewGroup vgSheetContainer;
 
-    private View vgSheetHeader;
     private TextView tvSheetTitle;
     private View ivSheetSwitch;
 
@@ -64,6 +45,7 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
 
     private NBottomSheetBehavior bottomSheetBehavior;
 
+    private SheetDataPresenter mDataPresenter;
     private Disposable recommendDisposable;
     private Disposable searchDisposable;
 
@@ -85,21 +67,12 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
         super.onFinishInflate();
 
         tvSheetTitle = findViewById(R.id.tvSheetTitle);
-
-        vgSheetHeader = findViewById(R.id.vgSheetHeader);
-        vgSheetHeader.setOnClickListener(this);
-
         ivSheetSwitch = findViewById(R.id.ivSheetSwitch);
-        ivSheetSwitch.setOnClickListener(this);
-
-        rvRecommendApps = findViewById(R.id.rvRecommendApps);
-        rvRecommendApps.addOnItemTouchListener(onItemTouchListener);
-        //adapter初始化的时候传入new ArrayList，后续就不用判断items是否为null了
-        recommendAdapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
-        rvRecommendApps.setAdapter(recommendAdapter);
-
         vgSheetContainer = findViewById(R.id.vgSheetContainer);
         bottomSheetBehavior = NBottomSheetBehavior.from(vgSheetContainer);
+
+        ivSheetSwitch.setOnClickListener(this);
+        findViewById(R.id.vgSheetHeader).setOnClickListener(this);
         bottomSheetBehavior.setBottomSheetCallback(new NBottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
@@ -107,58 +80,42 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
                     hideKeyBoard();
                 }
             }
-
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-            }
         });
+        initSheetContent(true);
         switchSheetContent(true);
+
+        mDataPresenter = new SheetDataPresenter(getContext());
         setupData();
     }
 
-    private void setupData() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        RecommendAppDao mRecommendAppDao = RecommendDatabase.getInstance(getContext()).recommendAppDao();
+    private void initSheetContent(boolean isRecommended) {
+        if (isRecommended) {
+            rvRecommendApps = findViewById(R.id.rvRecommendApps);
+            rvRecommendApps.addOnItemTouchListener(onItemTouchListener);
+            //adapter初始化的时候传入new ArrayList，后续就不用判断items是否为null了
+            recommendAdapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
+            rvRecommendApps.setAdapter(recommendAdapter);
+            return;
+        }
+        //搜索
+        vgSearchPanel = ((ViewStub) findViewById(R.id.vsSearchAppPanel)).inflate();
+        spvSearchPanel = findViewById(R.id.spvSearchApp);
+        rvSearchApps = findViewById(R.id.rvSearchApps);
+        rvSearchApps.addOnItemTouchListener(onItemTouchListener);
+        //adapter初始化的时候传入new ArrayList，后续就不用判断items是否为null了
+        searchAdapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
+        rvSearchApps.setAdapter(searchAdapter);
 
+        spvSearchPanel.setSearchPanelListener(input -> {
+            searchApps(input);
+        });
+    }
+
+    private void setupData() {
         switchProgress(true);
         dispose(recommendDisposable);
-        recommendDisposable = Observable
-                .create((ObservableEmitter<List<RecommendApp>> e) -> {
-                    //从本地获取数据
-                    List<RecommendApp> recommendApps = mRecommendAppDao.getRecommendApps();
-                    boolean hasRecommendApps = (recommendApps != null && recommendApps.size() > 0);
-                    if (hasRecommendApps) {
-                        e.onNext(recommendApps);
-                    }
-                    //更新数据
-                    long cacheTime = sharedPreferences.getLong(LAST_PULL_TIME, 0);
-                    if (System.currentTimeMillis() - cacheTime > 86400000) {
-                        //24*60*60*1000=86400000,缓存时间大于一天才重新获取数据
-                        String bql = String.format("select * from RecommendApp where packageName!='%s'", getContext().getPackageName());
-                        String result = BmobUtils.getInstance().findBQL(bql);
-                        Log.e("RecommendSheetView", "setupData: server data=" + result);
 
-                        if (result.contains("appName")) {
-                            RecommendAppResult recommendAppResult = GsonHolder.getGson().fromJson(result, RecommendAppResult.class);
-                            mRecommendAppDao.saveRecommendApps(recommendAppResult.results);
-
-                            sharedPreferences.edit()
-                                    .putLong(LAST_PULL_TIME, System.currentTimeMillis())
-                                    .apply();
-
-                            if (!hasRecommendApps) {
-                                hasRecommendApps = true;
-                                e.onNext(recommendAppResult.results);
-                            }
-                        }
-                    }
-                    if (!hasRecommendApps) {
-                        e.onNext(new ArrayList<>());
-                    }
-                    e.onComplete();
-                })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+        recommendDisposable = mDataPresenter.getRecommendApps()
                 .subscribe(recommendApps -> {
                     if (!isViewValid()) {
                         return;
@@ -191,29 +148,7 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
         switchProgress(true);
         dispose(searchDisposable);
 
-        searchDisposable = Observable
-                .create((ObservableEmitter<List<SearchAppDetail>> e) -> {
-                    String result = BmobUtils.getInstance().search(keyword).trim();
-                    Log.e("RecommendSheetView", "searchApps: result=" + result);
-
-                    boolean hasResults = false;
-                    if (result.contains("apps")) {
-                        if (result.endsWith(";")) {
-                            result = result.substring(0, result.length() - 1);
-                        }
-                        SearchAppResult searchAppResult = GsonHolder.getGson().fromJson(result, SearchAppResult.class);
-                        if (searchAppResult != null && searchAppResult.apps != null) {
-                            hasResults = true;
-                            e.onNext(searchAppResult.apps);
-                        }
-                    }
-                    if (!hasResults) {
-                        e.onNext(new ArrayList<>());
-                    }
-                    e.onComplete();
-                })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+        searchDisposable = mDataPresenter.searchApps(keyword)
                 .subscribe(searchAppDetails -> {
                     if (!isViewValid()) {
                         return;
@@ -267,18 +202,7 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
             return;
         }
         if (vgSearchPanel == null) {
-            /*init search part*/
-            vgSearchPanel = ((ViewStub) findViewById(R.id.vsSearchAppPanel)).inflate();
-            spvSearchPanel = findViewById(R.id.spvSearchApp);
-            rvSearchApps = findViewById(R.id.rvSearchApps);
-            rvSearchApps.addOnItemTouchListener(onItemTouchListener);
-            //adapter初始化的时候传入new ArrayList，后续就不用判断items是否为null了
-            searchAdapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
-            rvSearchApps.setAdapter(searchAdapter);
-
-            spvSearchPanel.setSearchPanelListener(input -> {
-                searchApps(input);
-            });
+            initSheetContent(false);
         }
         /*switch search part*/
         tvSheetTitle.setText(R.string.search_app);
@@ -366,22 +290,21 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
 
         @Override
         public void onTouchEvent(RecyclerView rv, MotionEvent e) {
-
         }
 
         @Override
         public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-
         }
     };
 
-    private void setScrollable(View bottomSheet, RecyclerView recyclerView){
+    private void setScrollable(View bottomSheet, RecyclerView recyclerView) {
         ViewGroup.LayoutParams params = bottomSheet.getLayoutParams();
         if (params instanceof CoordinatorLayout.LayoutParams) {
             CoordinatorLayout.LayoutParams coordinatorLayoutParams = (CoordinatorLayout.LayoutParams) params;
             CoordinatorLayout.Behavior behavior = coordinatorLayoutParams.getBehavior();
-            if (behavior != null && behavior instanceof NBottomSheetBehavior)
-                ((NBottomSheetBehavior)behavior).setNestedScrollingChildRef(recyclerView);
+            if (behavior != null && behavior instanceof NBottomSheetBehavior) {
+                ((NBottomSheetBehavior) behavior).setNestedScrollingChildRef(recyclerView);
+            }
         }
     }
 }
