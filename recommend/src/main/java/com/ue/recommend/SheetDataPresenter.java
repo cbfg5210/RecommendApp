@@ -3,7 +3,6 @@ package com.ue.recommend;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import com.ue.recommend.db.RecommendAppDao;
 import com.ue.recommend.db.RecommendDatabase;
@@ -13,6 +12,7 @@ import com.ue.recommend.model.SearchAppDetail;
 import com.ue.recommend.model.SearchAppResult;
 import com.ue.recommend.util.BmobUtils;
 import com.ue.recommend.util.GsonHolder;
+import com.ue.recommend.util.KLog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +52,7 @@ public class SheetDataPresenter {
                         //24*60*60*1000=86400000,缓存时间大于一天才重新获取数据
                         String bql = String.format("select * from RecommendApp where packageName!='%s'", mContext.getPackageName());
                         String result = BmobUtils.getInstance().findBQL(bql);
-                        Log.e("RecommendSheetView", "getRecommendApps: server data=" + result);
+                        KLog.e("RecommendSheetView", "getRecommendApps: server data=" + result);
 
                         if (result.contains("appName")) {
                             RecommendAppResult recommendAppResult = GsonHolder.getGson().fromJson(result, RecommendAppResult.class);
@@ -81,7 +81,7 @@ public class SheetDataPresenter {
         return Observable
                 .create((ObservableEmitter<List<SearchAppDetail>> e) -> {
                     String result = BmobUtils.getInstance().search(keyword).trim();
-                    Log.e("RecommendSheetView", "searchApps: result=" + result);
+                    KLog.e("RecommendSheetView", "searchApps: result=" + result);
 
                     boolean hasResults = false;
                     if (result.contains("apps")) {
