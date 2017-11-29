@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -244,8 +243,11 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
     }
 
     public void addBannerAd(View bannerView) {
-        bannerView.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.col_sheet_list));
         vgSheetContainer.addView(bannerView);
+    }
+
+    public ViewGroup getBannerContainer() {
+        return (ViewGroup) ((ViewStub) findViewById(R.id.vsBannerContainer)).inflate();
     }
 
     public int getState() {

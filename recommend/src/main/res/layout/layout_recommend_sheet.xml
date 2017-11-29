@@ -8,9 +8,9 @@
     android:layout_marginLeft="16dp"
     android:layout_marginRight="16dp"
     android:orientation="vertical"
+    app:layout_behavior="com.ue.recommend.widget.NBottomSheetBehavior"
     app:nBehavior_hideable="false"
-    app:nBehavior_peekHeight="100dp"
-    app:layout_behavior="com.ue.recommend.widget.NBottomSheetBehavior">
+    app:nBehavior_peekHeight="100dp">
 
     <FrameLayout
         android:id="@+id/vgSheetHeader"
@@ -40,13 +40,14 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/col_sheet_list">
         <!--recommend-->
         <android.support.v7.widget.RecyclerView
             android:id="@+id/rvRecommendApps"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/col_sheet_list"
             android:clipToPadding="false"
             android:orientation="vertical"
             android:overScrollMode="never"
@@ -78,4 +79,11 @@
             android:inflatedId="@+id/vgNoApps"
             android:layout="@layout/layout_no_apps"/>
     </FrameLayout>
+
+    <ViewStub
+        android:id="@+id/vsBannerContainer"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:inflatedId="@+id/vgBannerContainer"
+        android:layout="@layout/layout_sheet_banner"/>
 </LinearLayout>
