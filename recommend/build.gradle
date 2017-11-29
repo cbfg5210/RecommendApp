@@ -37,16 +37,16 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation deps.support.app_compat
-    implementation deps.support.recyclerview
-    implementation deps.support.design
-    implementation deps.recyclerAdapterDelegate
-    implementation deps.picasso
-    implementation deps.gson
+    compileOnly deps.support.app_compat
+    compileOnly deps.support.recyclerview
+    compileOnly deps.support.design
+    compileOnly deps.recyclerAdapterDelegate
+    compileOnly deps.picasso
+    compileOnly deps.gson
     /*rxjava*/
-    implementation deps.rxAndroid
-    implementation deps.rxjava2
+    compileOnly deps.rxAndroid
+    compileOnly deps.rxjava2
     /*room*/
-    implementation deps.room.runtime
+    compileOnly deps.room.runtime
     annotationProcessor deps.room.compiler
 }
