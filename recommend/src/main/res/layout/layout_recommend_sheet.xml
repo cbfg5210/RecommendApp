@@ -8,8 +8,8 @@
     android:layout_marginLeft="16dp"
     android:layout_marginRight="16dp"
     android:orientation="vertical"
-    app:behavior_hideable="false"
-    app:behavior_peekHeight="100dp"
+    app:nBehavior_hideable="false"
+    app:nBehavior_peekHeight="100dp"
     app:layout_behavior="com.ue.recommend.widget.NBottomSheetBehavior">
 
     <FrameLayout

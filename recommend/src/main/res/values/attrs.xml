@@ -4,4 +4,12 @@
         <attr name="clearImageRes" format="reference"/>
         <attr name="searchImageRes" format="reference"/>
     </declare-styleable>
+
+    <declare-styleable name="NBottomSheetBehavior_Layout">
+        <attr name="nBehavior_peekHeight" format="dimension">
+            <enum name="auto" value="-1"/>
+        </attr>
+        <attr name="nBehavior_hideable" format="boolean"/>
+        <attr name="nBehavior_skipCollapsed" format="boolean"/>
+    </declare-styleable>
 </resources>

@@ -40,8 +40,8 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     implementation deps.support.design
     implementation deps.support.recyclerview
-//    implementation project(':recommend')
-    implementation deps.recommendApp
+    implementation project(':recommend')
+//    implementation deps.recommendApp
     implementation deps.recyclerAdapterDelegate
     implementation deps.picasso
     /*rxjava*/

@@ -169,17 +169,26 @@ public class NBottomSheetBehavior<V extends View> extends CoordinatorLayout.Beha
     public NBottomSheetBehavior(Context context, AttributeSet attrs) {
         super(context, attrs);
         TypedArray a = context.obtainStyledAttributes(attrs,
-                R.styleable.BottomSheetBehavior_Layout);
-        TypedValue value = a.peekValue(R.styleable.BottomSheetBehavior_Layout_behavior_peekHeight);
+                R.styleable.NBottomSheetBehavior_Layout);
+        // TODO: 2017/11/29 replace
+        //R.styleable.BottomSheetBehavior_Layout);
+        TypedValue value = a.peekValue(R.styleable.NBottomSheetBehavior_Layout_nBehavior_peekHeight);
+        // TODO: 2017/11/29 replace
+        //TypedValue value = a.peekValue(R.styleable.BottomSheetBehavior_Layout_behavior_peekHeight);
         if (value != null && value.data == PEEK_HEIGHT_AUTO) {
             setPeekHeight(value.data);
         } else {
             setPeekHeight(a.getDimensionPixelSize(
-                    R.styleable.BottomSheetBehavior_Layout_behavior_peekHeight, PEEK_HEIGHT_AUTO));
+                    R.styleable.NBottomSheetBehavior_Layout_nBehavior_peekHeight, PEEK_HEIGHT_AUTO));
+            // TODO: 2017/11/29 replace
+            //R.styleable.BottomSheetBehavior_Layout_behavior_peekHeight, PEEK_HEIGHT_AUTO));
         }
-        setHideable(a.getBoolean(R.styleable.BottomSheetBehavior_Layout_behavior_hideable, false));
-        setSkipCollapsed(a.getBoolean(R.styleable.BottomSheetBehavior_Layout_behavior_skipCollapsed,
+        setHideable(a.getBoolean(R.styleable.NBottomSheetBehavior_Layout_nBehavior_hideable, false));
+        setSkipCollapsed(a.getBoolean(R.styleable.NBottomSheetBehavior_Layout_nBehavior_skipCollapsed,
                 false));
+        // TODO: 2017/11/29 replace
+        //setHideable(a.getBoolean(R.styleable.BottomSheetBehavior_Layout_behavior_hideable, false));
+        //setSkipCollapsed(a.getBoolean(R.styleable.BottomSheetBehavior_Layout_behavior_skipCollapsed,false));
         a.recycle();
         ViewConfiguration configuration = ViewConfiguration.get(context);
         mMaximumVelocity = configuration.getScaledMaximumFlingVelocity();
@@ -215,8 +224,10 @@ public class NBottomSheetBehavior<V extends View> extends CoordinatorLayout.Beha
         int peekHeight;
         if (mPeekHeightAuto) {
             if (mPeekHeightMin == 0) {
-                mPeekHeightMin = parent.getResources().getDimensionPixelSize(
-                        R.dimen.design_bottom_sheet_peek_height_min);
+                // TODO: 2017/11/29 replace
+                mPeekHeightMin = 64;
+                //mPeekHeightMin = parent.getResources().getDimensionPixelSize(
+                //      R.dimen.design_bottom_sheet_peek_height_min);
             }
             peekHeight = Math.max(mPeekHeightMin, mParentHeight - parent.getWidth() * 9 / 16);
         } else {
