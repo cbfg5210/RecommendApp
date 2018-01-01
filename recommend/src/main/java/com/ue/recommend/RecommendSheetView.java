@@ -5,7 +5,6 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -13,12 +12,9 @@ import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.ue.recommend.adapter.RecommendAppAdapter;
 import com.ue.recommend.widget.NBottomSheetBehavior;
-import com.ue.recommend.widget.SearchPanelView;
 
 import java.util.ArrayList;
 
@@ -27,29 +23,15 @@ import io.reactivex.disposables.Disposable;
 public class RecommendSheetView extends CoordinatorLayout implements View.OnClickListener {
     private ViewGroup vgSheetContainer;
 
-    private TextView tvSheetTitle;
-    private View ivSheetSwitch;
-
     private RecyclerView rvRecommendApps;
     private RecommendAppAdapter recommendAdapter;
 
-    private View vgSearchPanel;
-    private SearchPanelView spvSearchPanel;
-    private RecyclerView rvSearchApps;
-    private RecommendAppAdapter searchAdapter;
-
     private ProgressBar pbPullProgress;
-    private View vgNoApps;
-    private TextView tvNoAppReason;
 
     private NBottomSheetBehavior bottomSheetBehavior;
 
     private SheetDataPresenter mDataPresenter;
     private Disposable recommendDisposable;
-    private Disposable searchDisposable;
-
-    private boolean hasRecommends = true;
-    private boolean hasSearches = true;
 
     public RecommendSheetView(Context context) {
         this(context, null, 0);
@@ -68,13 +50,9 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        tvSheetTitle = findViewById(R.id.tvSheetTitle);
-        ivSheetSwitch = findViewById(R.id.ivSheetSwitch);
         vgSheetContainer = findViewById(R.id.vgSheetContainer);
         bottomSheetBehavior = NBottomSheetBehavior.from(vgSheetContainer);
 
-        ivSheetSwitch.setOnClickListener(this);
-        findViewById(R.id.vgSheetHeader).setOnClickListener(this);
         bottomSheetBehavior.setBottomSheetCallback(new NBottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
@@ -83,34 +61,15 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
                 }
             }
         });
-        initSheetContent(true);
-        switchSheetContent(true);
+
+        rvRecommendApps = findViewById(R.id.rvRecommendApps);
+        rvRecommendApps.addOnItemTouchListener(onItemTouchListener);
+        //adapter初始化的时候传入new ArrayList，后续就不用判断items是否为null了
+        recommendAdapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
+        rvRecommendApps.setAdapter(recommendAdapter);
 
         mDataPresenter = new SheetDataPresenter(getContext());
         setupData();
-    }
-
-    private void initSheetContent(boolean isRecommended) {
-        if (isRecommended) {
-            rvRecommendApps = findViewById(R.id.rvRecommendApps);
-            rvRecommendApps.addOnItemTouchListener(onItemTouchListener);
-            //adapter初始化的时候传入new ArrayList，后续就不用判断items是否为null了
-            recommendAdapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
-            rvRecommendApps.setAdapter(recommendAdapter);
-            return;
-        }
-        //搜索
-        vgSearchPanel = ((ViewStub) findViewById(R.id.vsSearchAppPanel)).inflate();
-        spvSearchPanel = findViewById(R.id.spvSearchApp);
-        rvSearchApps = findViewById(R.id.rvSearchApps);
-        rvSearchApps.addOnItemTouchListener(onItemTouchListener);
-        //adapter初始化的时候传入new ArrayList，后续就不用判断items是否为null了
-        searchAdapter = new RecommendAppAdapter((Activity) getContext(), new ArrayList<>());
-        rvSearchApps.setAdapter(searchAdapter);
-
-        spvSearchPanel.setSearchPanelListener(input -> {
-            searchApps(input);
-        });
     }
 
     private void setupData() {
@@ -124,12 +83,8 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
                     }
                     switchProgress(false);
                     if (recommendApps.size() == 0) {
-                        hasRecommends = false;
-                        switchNoApps(false);
-                        tvNoAppReason.setText(getContext().getString(R.string.no_recommend_app));
                         return;
                     }
-                    hasRecommends = true;
                     recommendAdapter.getItems().addAll(recommendApps);
                     recommendAdapter.notifyDataSetChanged();
 
@@ -137,91 +92,22 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
                     if (!isViewValid() || recommendAdapter.getItems().size() > 0) {
                         return;
                     }
-                    hasRecommends = false;
                     switchProgress(false);
-                    switchNoApps(false);
-                    tvNoAppReason.setText(getContext().getString(R.string.error_search) + throwable.getMessage());
-                });
-    }
-
-    private void searchApps(String keyword) {
-        if (TextUtils.isEmpty(keyword)) {
-            Toast.makeText(getContext(), R.string.input_keyword, Toast.LENGTH_SHORT).show();
-            return;
-        }
-        hideKeyBoard();
-        switchProgress(true);
-        dispose(searchDisposable);
-
-        searchDisposable = mDataPresenter.searchApps(keyword)
-                .subscribe(searchAppDetails -> {
-                    if (!isViewValid()) {
-                        return;
-                    }
-                    switchProgress(false);
-                    if (searchAppDetails.size() == 0) {
-                        hasSearches = false;
-                        switchNoApps(false);
-                        return;
-                    }
-                    hasSearches = true;
-                    searchAdapter.getItems().clear();
-                    searchAdapter.getItems().addAll(searchAppDetails);
-                    searchAdapter.notifyDataSetChanged();
-                }, throwable -> {
-                    if (!isViewValid()) {
-                        return;
-                    }
-                    hasSearches = false;
-                    switchProgress(false);
-                    switchNoApps(false);
-                    tvNoAppReason.setText(getContext().getString(R.string.error_search) + throwable.getMessage());
                 });
     }
 
     @Override
     public void onClick(View view) {
         int viewId = view.getId();
-        if (viewId == R.id.vgSheetHeader) {
+        if (viewId == R.id.tvSheetTitle) {
             if (bottomSheetBehavior.getState() == NBottomSheetBehavior.STATE_COLLAPSED) {
                 bottomSheetBehavior.setState(NBottomSheetBehavior.STATE_EXPANDED);
             }
             return;
         }
-        if (viewId == R.id.ivSheetSwitch) {
-            if (bottomSheetBehavior.getState() == NBottomSheetBehavior.STATE_COLLAPSED) {
-                bottomSheetBehavior.setState(NBottomSheetBehavior.STATE_EXPANDED);
-            }
-            switchSheetContent(!ivSheetSwitch.isSelected());
-            return;
-        }
-    }
-
-    private void switchSheetContent(boolean isRecommend) {
-        ivSheetSwitch.setSelected(isRecommend);
-        tvSheetTitle.setSelected(isRecommend);
-        //切换到推荐应用
-        if (isRecommend) {
-            switchNoApps(hasRecommends);
-            tvSheetTitle.setText(R.string.recommend_app);
-            rvRecommendApps.setVisibility(View.VISIBLE);
-            if (vgSearchPanel != null) {
-                vgSearchPanel.setVisibility(View.GONE);
-            }
-            return;
-        }
-        //切换到搜索应用
-        switchNoApps(hasSearches);
-        if (vgSearchPanel == null) {
-            initSheetContent(false);
-        }
-        tvSheetTitle.setText(R.string.search_app);
-        vgSearchPanel.setVisibility(View.VISIBLE);
-        rvRecommendApps.setVisibility(View.GONE);
     }
 
     private void switchProgress(boolean isShow) {
-        switchNoApps(true);
         if (pbPullProgress == null) {
             if (isShow) {
                 pbPullProgress = (ProgressBar) ((ViewStub) findViewById(R.id.vsProgressBar)).inflate();
@@ -229,17 +115,6 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
             return;
         }
         pbPullProgress.setVisibility(isShow ? View.VISIBLE : View.GONE);
-    }
-
-    private void switchNoApps(boolean hasApp) {
-        if (vgNoApps == null) {
-            if (!hasApp) {
-                vgNoApps = ((ViewStub) findViewById(R.id.vsNoApps)).inflate();
-                tvNoAppReason = findViewById(R.id.tvNoAppReason);
-            }
-            return;
-        }
-        vgNoApps.setVisibility(hasApp ? View.GONE : View.VISIBLE);
     }
 
     public void addBannerAd(View bannerView) {
@@ -261,13 +136,12 @@ public class RecommendSheetView extends CoordinatorLayout implements View.OnClic
     @Override
     public void onDetachedFromWindow() {
         dispose(recommendDisposable);
-        dispose(searchDisposable);
         super.onDetachedFromWindow();
     }
 
     private void hideKeyBoard() {
         ((InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE))
-                .hideSoftInputFromWindow(tvSheetTitle.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                .hideSoftInputFromWindow(vgSheetContainer.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
     }
 
     private boolean isViewValid() {

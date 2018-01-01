@@ -12,31 +12,18 @@
     app:nBehavior_hideable="false"
     app:nBehavior_peekHeight="100dp">
 
-    <FrameLayout
-        android:id="@+id/vgSheetHeader"
+    <TextView
+        android:id="@+id/tvSheetTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_recommend_sheet_title"
-        android:padding="15dp">
-
-        <TextView
-            android:id="@+id/tvSheetTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:drawableLeft="@drawable/sel_switch_title"
-            android:drawablePadding="10dp"
-            android:gravity="center_vertical"
-            android:text="@string/recommend_app"
-            android:textColor="@color/col_cc000000"
-            android:textSize="15sp"/>
-
-        <ImageView
-            android:id="@+id/ivSheetSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right|center_vertical"
-            app:srcCompat="@drawable/sel_switch_action"/>
-    </FrameLayout>
+        android:drawableLeft="@drawable/svg_recommend"
+        android:drawablePadding="10dp"
+        android:gravity="center_vertical"
+        android:padding="15dp"
+        android:text="@string/recommend_app"
+        android:textColor="@color/col_cc000000"
+        android:textSize="15sp"/>
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -55,13 +42,6 @@
             android:paddingTop="5dp"
             android:scrollbars="none"
             app:layoutManager="android.support.v7.widget.LinearLayoutManager"/>
-        <!--search-->
-        <ViewStub
-            android:id="@+id/vsSearchAppPanel"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:inflatedId="@+id/vgSearchPanel"
-            android:layout="@layout/layout_search_app"/>
         <!--progress-->
         <ViewStub
             android:id="@+id/vsProgressBar"

@@ -13,7 +13,6 @@ import com.ue.adapterdelegate.Item;
 import com.ue.adapterdelegate.OnDelegateClickListener;
 import com.ue.recommend.R;
 import com.ue.recommend.model.RecommendApp;
-import com.ue.recommend.model.SearchAppDetail;
 
 import java.util.List;
 
@@ -30,10 +29,6 @@ public class RecommendAppAdapter extends DelegationAdapter<Item> implements OnDe
         RecommendAppDelegate delegate = new RecommendAppDelegate(activity);
         delegate.setOnDelegateClickListener(this);
         addDelegate(delegate);
-
-        SearchAppDetailDelegate searchDelegate = new SearchAppDetailDelegate(activity);
-        searchDelegate.setOnDelegateClickListener(this);
-        addDelegate(searchDelegate);
     }
 
     @Override
@@ -45,11 +40,6 @@ public class RecommendAppAdapter extends DelegationAdapter<Item> implements OnDe
         if (item instanceof RecommendApp) {
             RecommendApp recommendApp = (RecommendApp) items.get(position);
             openBrowser(activity, recommendApp.appUrl);
-            return;
-        }
-        if (item instanceof SearchAppDetail) {
-            SearchAppDetail recommendApp = (SearchAppDetail) items.get(position);
-            openBrowser(activity, recommendApp.getAppUrl());
             return;
         }
     }

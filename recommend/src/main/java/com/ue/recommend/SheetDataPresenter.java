@@ -8,8 +8,6 @@ import com.ue.recommend.db.RecommendAppDao;
 import com.ue.recommend.db.RecommendDatabase;
 import com.ue.recommend.model.RecommendApp;
 import com.ue.recommend.model.RecommendAppResult;
-import com.ue.recommend.model.SearchAppDetail;
-import com.ue.recommend.model.SearchAppResult;
 import com.ue.recommend.util.BmobUtils;
 import com.ue.recommend.util.GsonHolder;
 import com.ue.recommend.util.KLog;
@@ -77,7 +75,7 @@ public class SheetDataPresenter {
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
-    public Observable<List<SearchAppDetail>> searchApps(String keyword) {
+    /*public Observable<List<SearchAppDetail>> searchApps(String keyword) {
         return Observable
                 .create((ObservableEmitter<List<SearchAppDetail>> e) -> {
                     String result = BmobUtils.getInstance().search(keyword).trim();
@@ -101,5 +99,5 @@ public class SheetDataPresenter {
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
-    }
+    }*/
 }
