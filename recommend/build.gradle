@@ -1,4 +1,6 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 // JitPack Maven
 apply plugin: 'com.github.dcendents.android-maven'
 // Your Group
@@ -36,7 +38,7 @@ android {
 }
 
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    compileOnly deps.kotlinJre
     compileOnly deps.support.app_compat
     compileOnly deps.support.recyclerview
     compileOnly deps.support.design

@@ -41,7 +41,7 @@ class RecommendAppAdapter(private val activity: Activity, items: List<Item>?) : 
         }
     }
 
-    private fun openBrowser(context: Context, url: String) {
+    private fun openBrowser(context: Context, url: String?) {
         if (TextUtils.isEmpty(url)) {
             Toast.makeText(context, context.getString(R.string.error_open_browser), Toast.LENGTH_SHORT).show()
             return
@@ -54,6 +54,5 @@ class RecommendAppAdapter(private val activity: Activity, items: List<Item>?) : 
         } catch (exp: Exception) {
             Toast.makeText(context, context.getString(R.string.error_open_browser), Toast.LENGTH_SHORT).show()
         }
-
     }
 }

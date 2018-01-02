@@ -1,4 +1,6 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion buildVersions.targetSdk
@@ -33,15 +35,12 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation deps.kotlinJre
     implementation deps.support.app_compat
     implementation deps.support.constraintLayout
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     implementation deps.support.design
     implementation deps.support.recyclerview
     implementation project(':recommend')
-//    implementation deps.recommendApp
     implementation deps.recyclerAdapterDelegate
     implementation deps.picasso
     /*rxjava*/

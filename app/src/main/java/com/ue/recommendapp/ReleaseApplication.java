@@ -25,9 +25,9 @@ public class ReleaseApplication extends Application {
             //support svg for TextView drawableLeft
             AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
             //init bmob
-            BmobUtils.getInstance().initBmob("", "");
+            BmobUtils.Companion.getInstance().initBmob("", "");
             //
-            KLog.init(true);
+            KLog.INSTANCE.init(true);
             // init debug tools
             initDebugTools();
         } else {
