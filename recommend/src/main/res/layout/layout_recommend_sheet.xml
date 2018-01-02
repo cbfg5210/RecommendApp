@@ -43,13 +43,11 @@
             android:scrollbars="none"
             app:layoutManager="android.support.v7.widget.LinearLayoutManager"/>
         <!--progress-->
-        <ViewStub
-            android:id="@+id/vsProgressBar"
+        <ProgressBar
+            android:id="@+id/pbPullProgress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:inflatedId="@+id/pbPullProgress"
-            android:layout="@layout/layout_progress"/>
+            android:layout_gravity="center"/>
         <!--empty-->
         <ViewStub
             android:id="@+id/vsNoApps"

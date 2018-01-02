@@ -10,7 +10,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewStub
 import android.view.inputmethod.InputMethodManager
-import android.widget.ProgressBar
 import com.ue.adapterdelegate.Item
 import com.ue.recommend.adapter.RecommendAppAdapter
 import com.ue.recommend.widget.NBottomSheetBehavior
@@ -20,7 +19,6 @@ import java.util.*
 
 class RecommendSheetView : CoordinatorLayout, View.OnClickListener {
     private lateinit var recommendAdapter: RecommendAppAdapter
-    private var pbPullProgress: ProgressBar? = null
     private lateinit var bottomSheetBehavior: NBottomSheetBehavior<*>
     private lateinit var mDataPresenter: SheetDataPresenter
     private var recommendDisposable: Disposable? = null
@@ -81,7 +79,7 @@ class RecommendSheetView : CoordinatorLayout, View.OnClickListener {
     }
 
     private fun setupData() {
-        switchProgress(true)
+        pbPullProgress.visibility = View.VISIBLE
         dispose(recommendDisposable)
 
         recommendDisposable = mDataPresenter.recommendApps
@@ -89,7 +87,7 @@ class RecommendSheetView : CoordinatorLayout, View.OnClickListener {
                     if (!isViewValid) {
                         return@subscribe
                     }
-                    switchProgress(false)
+                    pbPullProgress.visibility = View.GONE
                     if (recommendApps.isEmpty()) {
                         return@subscribe
                     }
@@ -100,7 +98,7 @@ class RecommendSheetView : CoordinatorLayout, View.OnClickListener {
                     if (!isViewValid || recommendAdapter.items.size > 0) {
                         return@subscribe
                     }
-                    switchProgress(false)
+                    pbPullProgress.visibility = View.GONE
                 }
     }
 
@@ -111,16 +109,6 @@ class RecommendSheetView : CoordinatorLayout, View.OnClickListener {
             }
             return
         }
-    }
-
-    private fun switchProgress(isShow: Boolean) {
-        if (pbPullProgress == null) {
-            if (isShow) {
-                pbPullProgress = (findViewById<View>(R.id.vsProgressBar) as ViewStub).inflate() as ProgressBar
-            }
-            return
-        }
-        pbPullProgress!!.visibility = if (isShow) View.VISIBLE else View.GONE
     }
 
     fun addBannerAd(bannerView: View) {
