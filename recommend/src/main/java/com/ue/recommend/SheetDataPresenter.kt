@@ -1,9 +1,7 @@
 package com.ue.recommend
 
 import android.content.Context
-import android.preference.PreferenceManager
 import android.text.TextUtils
-import android.util.Log
 import com.google.gson.reflect.TypeToken
 import com.ue.recommend.model.RecommendApp
 import com.ue.recommend.model.RecommendAppResult
@@ -25,12 +23,12 @@ class SheetDataPresenter(private val mContext: Context) {
     //24*60*60*1000=86400000,缓存时间大于一天才重新获取数据
     val recommendApps: Observable<List<RecommendApp>>
         get() {
-            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext)
+            val sharedPreferences = mContext.getSharedPreferences(SP_NAME, Context.MODE_PRIVATE)
 
             return Observable
                     .create { e: ObservableEmitter<List<RecommendApp>> ->
                         val spRecommendApps = sharedPreferences.getString(SP_RECOMMEND_APPS, "")
-                        Log.e("SheetDataPresenter", "spRecommendApps=$spRecommendApps: ")
+                        //Log.e("SheetDataPresenter", "spRecommendApps=$spRecommendApps: ")
                         if (!TextUtils.isEmpty(spRecommendApps)) {
                             val recommendApps = GsonHolder.gson.fromJson<List<RecommendApp>>(spRecommendApps, object : TypeToken<List<RecommendApp>>() {}.type)
                             e.onNext(recommendApps)
@@ -40,7 +38,7 @@ class SheetDataPresenter(private val mContext: Context) {
                         if (System.currentTimeMillis() - cacheTime > 86400000) {
                             val bql = String.format("select * from RecommendApp where packageName!='%s'", mContext.packageName)
                             val result = BmobUtils.Companion.getInstance().findBQL(bql)
-                            Log.e("RecommendSheetView", "getRecommendApps: server data=" + result)
+                            //Log.e("RecommendSheetView", "getRecommendApps: server data=" + result)
 
                             if (result.contains("appName")) {
                                 val recommendAppResult = GsonHolder.gson.fromJson(result, RecommendAppResult::class.java)
@@ -59,5 +57,6 @@ class SheetDataPresenter(private val mContext: Context) {
     companion object {
         private val LAST_PULL_TIME = "lastPullTime"
         private val SP_RECOMMEND_APPS = "sp_recommend_apps"
+        private val SP_NAME = "recommends"
     }
 }
