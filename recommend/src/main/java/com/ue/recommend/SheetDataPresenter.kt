@@ -2,7 +2,8 @@ package com.ue.recommend
 
 import android.content.Context
 import android.preference.PreferenceManager
-import com.ue.recommend.db.RecommendDatabase
+import android.text.TextUtils
+import com.google.gson.reflect.TypeToken
 import com.ue.recommend.model.RecommendApp
 import com.ue.recommend.model.RecommendAppResult
 import com.ue.recommend.util.BmobUtils
@@ -12,7 +13,6 @@ import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import java.util.*
 
 /**
  * Created by hawk on 2017/11/27.
@@ -26,15 +26,15 @@ class SheetDataPresenter(private val mContext: Context) {
     val recommendApps: Observable<List<RecommendApp>>
         get() {
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext)
-            val mRecommendAppDao = RecommendDatabase.getInstance(mContext).recommendAppDao()
 
             return Observable
                     .create { e: ObservableEmitter<List<RecommendApp>> ->
-                        val recommendApps = mRecommendAppDao.recommendApps
-                        var hasRecommendApps = recommendApps != null && recommendApps.size > 0
-                        if (hasRecommendApps) {
+                        val spRecommendApps = sharedPreferences.getString(SP_RECOMMEND_APPS, "")
+                        if (!TextUtils.isEmpty(spRecommendApps)) {
+                            val recommendApps = GsonHolder.gson.fromJson<List<RecommendApp>>(spRecommendApps, object : TypeToken<List<RecommendApp>>() {}.type)
                             e.onNext(recommendApps)
                         }
+
                         val cacheTime = sharedPreferences.getLong(LAST_PULL_TIME, 0)
                         if (System.currentTimeMillis() - cacheTime > 86400000) {
                             val bql = String.format("select * from RecommendApp where packageName!='%s'", mContext.packageName)
@@ -43,20 +43,11 @@ class SheetDataPresenter(private val mContext: Context) {
 
                             if (result.contains("appName")) {
                                 val recommendAppResult = GsonHolder.gson.fromJson(result, RecommendAppResult::class.java)
-                                mRecommendAppDao.saveRecommendApps(recommendAppResult.results)
+                                sharedPreferences.edit().putString(SP_RECOMMEND_APPS, GsonHolder.gson.toJson(recommendAppResult.results)).apply()
+                                sharedPreferences.edit().putLong(LAST_PULL_TIME, System.currentTimeMillis()).apply()
 
-                                sharedPreferences.edit()
-                                        .putLong(LAST_PULL_TIME, System.currentTimeMillis())
-                                        .apply()
-
-                                if (!hasRecommendApps) {
-                                    hasRecommendApps = true
-                                    e.onNext(recommendAppResult.results)
-                                }
+                                e.onNext(recommendAppResult.results)
                             }
-                        }
-                        if (!hasRecommendApps) {
-                            e.onNext(ArrayList())
                         }
                         e.onComplete()
                     }
@@ -66,5 +57,6 @@ class SheetDataPresenter(private val mContext: Context) {
 
     companion object {
         private val LAST_PULL_TIME = "lastPullTime"
+        private val SP_RECOMMEND_APPS = "sp_recommend_apps"
     }
 }

@@ -15,13 +15,6 @@ android {
         versionName "0.6"
 
         vectorDrawables.useSupportLibrary = true
-
-        // Write out the current schema of Room
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
-            }
-        }
     }
 
     buildTypes {
@@ -29,11 +22,6 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
@@ -48,7 +36,4 @@ dependencies {
     /*rxjava*/
     compileOnly deps.rxAndroid
     compileOnly deps.rxjava2
-    /*room*/
-    compileOnly deps.room.runtime
-    annotationProcessor deps.room.compiler
 }
