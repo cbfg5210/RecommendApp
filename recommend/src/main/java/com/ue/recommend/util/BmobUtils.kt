@@ -98,34 +98,6 @@ class BmobUtils private constructor() {
     }
 
     @Throws(IOException::class)
-    fun search(kw: String): String {
-        val result: String
-        val mURL = String.format("http://mapp.qzone.qq.com/cgi-bin/mapp/mapp_search_result?keyword=%s&platform=touch&network_type=undefined&resolution=720x1080", urlEncoder(kw))
-
-        val conn = getCommonConnection(URL(mURL), METHOD_GET)
-        conn.connect()
-        result = getResultFromConnection(conn)
-        conn.disconnect()
-
-        return result
-    }
-
-    @Throws(IOException::class)
-    private fun getCommonConnection(url: URL, method: String): HttpURLConnection {
-        val conn = url.openConnection() as HttpURLConnection
-        conn.requestMethod = method
-        conn.doInput = true
-        conn.readTimeout = TIME_OUT
-
-        conn.useCaches = false
-        conn.instanceFollowRedirects = true
-
-        conn.setRequestProperty(CONTENT_TYPE_TAG, CONTENT_TYPE_TEXT)
-
-        return conn
-    }
-
-    @Throws(IOException::class)
     private fun getResultFromConnection(conn: HttpURLConnection): String {
         val result = StringBuffer()
         val reader = BufferedReader(InputStreamReader(conn.inputStream, UTF8))
@@ -181,7 +153,8 @@ class BmobUtils private constructor() {
         private val CONTENT_TYPE_TEXT = "text/plain"
         private val METHOD_GET = "GET"
 
-        @Volatile private var bInstance: BmobUtils? = null
+        @Volatile
+        var bInstance: BmobUtils? = null
 
         fun getInstance(): BmobUtils {
             if (bInstance == null) {
@@ -193,9 +166,3 @@ class BmobUtils private constructor() {
         }
     }
 }
-/**
- * BQL查询表记录
- *
- * @param BQL SQL语句。例如：select * from Student where name=\"张三\" limit 0,10 order by name
- * @return JSON格式结果
- */

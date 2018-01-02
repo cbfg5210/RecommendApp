@@ -38,7 +38,7 @@ class SheetDataPresenter(private val mContext: Context) {
                         val cacheTime = sharedPreferences.getLong(LAST_PULL_TIME, 0)
                         if (System.currentTimeMillis() - cacheTime > 86400000) {
                             val bql = String.format("select * from RecommendApp where packageName!='%s'", mContext.packageName)
-                            val result = BmobUtils.getInstance().findBQL(bql)
+                            val result = BmobUtils.Companion.getInstance().findBQL(bql)
                             KLog.e("RecommendSheetView", "getRecommendApps: server data=" + result)
 
                             if (result.contains("appName")) {
