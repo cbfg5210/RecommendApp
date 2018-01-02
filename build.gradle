@@ -6,9 +6,8 @@ buildscript {
 
     dependencies {
         classpath deps.androidGradlePlugin
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-        classpath deps.androidMavenPlugin
+        classpath deps.kotlinGradlePlugin
+        classpath deps.androidMavenPlugin //for jitpack
     }
 }
 

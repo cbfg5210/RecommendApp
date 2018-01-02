@@ -38,7 +38,7 @@ class RecommendAppDelegate extends BaseAdapterDelegate<Item> {
     }
 
     @Override
-    protected void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, @NonNull Item item, @NonNull List payloads) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, @NonNull Item item, @NonNull List payloads) {
         ViewHolder cHolder = (ViewHolder) holder;
         RecommendApp recommendApp = (RecommendApp) item;
 
