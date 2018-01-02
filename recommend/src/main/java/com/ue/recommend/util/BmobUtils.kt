@@ -101,7 +101,7 @@ class BmobUtils private constructor() {
     private fun getResultFromConnection(conn: HttpURLConnection): String {
         val result = StringBuffer()
         val reader = BufferedReader(InputStreamReader(conn.inputStream, UTF8))
-        var line: String
+        var line: String?
         while (true) {
             line = reader.readLine()
             if (line == null) break

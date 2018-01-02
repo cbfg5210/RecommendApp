@@ -19,10 +19,10 @@ import kotlinx.android.synthetic.main.layout_recommend_sheet.view.*
 import java.util.*
 
 class RecommendSheetView : CoordinatorLayout, View.OnClickListener {
-    private var recommendAdapter: RecommendAppAdapter? = null
+    private lateinit var recommendAdapter: RecommendAppAdapter
     private var pbPullProgress: ProgressBar? = null
     private lateinit var bottomSheetBehavior: NBottomSheetBehavior<*>
-    private var mDataPresenter: SheetDataPresenter? = null
+    private lateinit var mDataPresenter: SheetDataPresenter
     private var recommendDisposable: Disposable? = null
 
     val bannerContainer: ViewGroup
@@ -84,7 +84,7 @@ class RecommendSheetView : CoordinatorLayout, View.OnClickListener {
         switchProgress(true)
         dispose(recommendDisposable)
 
-        recommendDisposable = mDataPresenter!!.recommendApps
+        recommendDisposable = mDataPresenter.recommendApps
                 .subscribe({ recommendApps ->
                     if (!isViewValid) {
                         return@subscribe
@@ -93,11 +93,11 @@ class RecommendSheetView : CoordinatorLayout, View.OnClickListener {
                     if (recommendApps.isEmpty()) {
                         return@subscribe
                     }
-                    recommendAdapter!!.items.addAll(recommendApps)
-                    recommendAdapter!!.notifyDataSetChanged()
+                    recommendAdapter.items.addAll(recommendApps)
+                    recommendAdapter.notifyDataSetChanged()
 
                 }) { _ ->
-                    if (!isViewValid || recommendAdapter!!.items.size > 0) {
+                    if (!isViewValid || recommendAdapter.items.size > 0) {
                         return@subscribe
                     }
                     switchProgress(false)

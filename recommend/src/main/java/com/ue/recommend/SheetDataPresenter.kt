@@ -3,6 +3,7 @@ package com.ue.recommend
 import android.content.Context
 import android.preference.PreferenceManager
 import android.text.TextUtils
+import android.util.Log
 import com.google.gson.reflect.TypeToken
 import com.ue.recommend.model.RecommendApp
 import com.ue.recommend.model.RecommendAppResult
@@ -30,6 +31,7 @@ class SheetDataPresenter(private val mContext: Context) {
             return Observable
                     .create { e: ObservableEmitter<List<RecommendApp>> ->
                         val spRecommendApps = sharedPreferences.getString(SP_RECOMMEND_APPS, "")
+                        Log.e("SheetDataPresenter", "spRecommendApps=$spRecommendApps: ")
                         if (!TextUtils.isEmpty(spRecommendApps)) {
                             val recommendApps = GsonHolder.gson.fromJson<List<RecommendApp>>(spRecommendApps, object : TypeToken<List<RecommendApp>>() {}.type)
                             e.onNext(recommendApps)
