@@ -9,7 +9,6 @@ import com.ue.recommend.model.RecommendApp
 import com.ue.recommend.model.RecommendAppResult
 import com.ue.recommend.util.BmobUtils
 import com.ue.recommend.util.GsonHolder
-import com.ue.recommend.util.KLog
 import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -41,7 +40,7 @@ class SheetDataPresenter(private val mContext: Context) {
                         if (System.currentTimeMillis() - cacheTime > 86400000) {
                             val bql = String.format("select * from RecommendApp where packageName!='%s'", mContext.packageName)
                             val result = BmobUtils.Companion.getInstance().findBQL(bql)
-                            KLog.e("RecommendSheetView", "getRecommendApps: server data=" + result)
+                            Log.e("RecommendSheetView", "getRecommendApps: server data=" + result)
 
                             if (result.contains("appName")) {
                                 val recommendAppResult = GsonHolder.gson.fromJson(result, RecommendAppResult::class.java)

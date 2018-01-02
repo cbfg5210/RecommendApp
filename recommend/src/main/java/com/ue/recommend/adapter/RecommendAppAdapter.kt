@@ -20,9 +20,7 @@ import com.ue.recommend.model.RecommendApp
 class RecommendAppAdapter(private val activity: Activity, items: List<Item>?) : DelegationAdapter<Item>(), OnDelegateClickListener {
 
     init {
-        if (items != null) {
-            this.items.addAll(items)
-        }
+        if (items != null) this.items.addAll(items)
 
         val delegate = RecommendAppDelegate(activity)
         delegate.onDelegateClickListener = this
@@ -35,8 +33,7 @@ class RecommendAppAdapter(private val activity: Activity, items: List<Item>?) : 
         }
         val item = items[position]
         if (item is RecommendApp) {
-            val recommendApp = items[position] as RecommendApp
-            openBrowser(activity, recommendApp.appUrl)
+            openBrowser(activity, item.appUrl)
             return
         }
     }

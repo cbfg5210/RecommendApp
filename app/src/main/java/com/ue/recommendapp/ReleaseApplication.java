@@ -8,7 +8,6 @@ import android.support.v7.app.AppCompatDelegate;
 
 import com.squareup.leakcanary.LeakCanary;
 import com.ue.recommend.util.BmobUtils;
-import com.ue.recommend.util.KLog;
 
 import java.util.List;
 
@@ -26,8 +25,6 @@ public class ReleaseApplication extends Application {
             AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
             //init bmob
             BmobUtils.Companion.getInstance().initBmob("", "");
-            //
-            KLog.INSTANCE.init(true);
             // init debug tools
             initDebugTools();
         } else {
