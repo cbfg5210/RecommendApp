@@ -9,22 +9,22 @@
     android:background="?attr/selectableItemBackground"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingBottom="10dp"
-    android:paddingLeft="15dp"
-    android:paddingRight="15dp"
-    android:paddingTop="10dp">
+    android:paddingBottom="@dimen/widget_size_10"
+    android:paddingLeft="@dimen/widget_size_15"
+    android:paddingRight="@dimen/widget_size_15"
+    android:paddingTop="@dimen/widget_size_10">
 
     <ImageView
         android:id="@+id/ivAppIcon"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="@dimen/widget_size_50"
+        android:layout_height="@dimen/widget_size_50"
         tools:srcCompat="@drawable/svg_recommend"/>
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp"
-        android:layout_marginStart="10dp"
+        android:layout_marginLeft="@dimen/widget_size_10"
+        android:layout_marginStart="@dimen/widget_size_10"
         android:layout_weight="1"
         android:orientation="vertical">
 
@@ -32,24 +32,24 @@
             android:id="@+id/tvAppName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="app name"
             android:textColor="@color/col_cc000000"
-            android:textSize="16sp"/>
+            android:textSize="@dimen/font_size_16"
+            tools:text="app name"/>
 
         <TextView
             android:id="@+id/tvAppDescription"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
+            android:layout_marginTop="@dimen/widget_size_5"
             android:ellipsize="end"
             android:maxLines="2"
-            tools:text="app descriptionapp descriptionapp descriptionapp descriptionapp description"
             android:textColor="@color/col_99000000"
-            android:textSize="14sp"/>
+            android:textSize="@dimen/font_size_14"
+            tools:text="app descriptionapp descriptionapp descriptionapp descriptionapp description"/>
     </LinearLayout>
 
     <ImageView
-        android:layout_width="30dp"
-        android:layout_height="30dp"
+        android:layout_width="@dimen/widget_size_30"
+        android:layout_height="@dimen/widget_size_30"
         app:srcCompat="@drawable/svg_chevron_right"/>
 </LinearLayout>

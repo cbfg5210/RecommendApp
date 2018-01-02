@@ -5,12 +5,12 @@
     android:id="@+id/vgSheetContainer"
     android:layout_width="match_parent"
     android:layout_height="500dp"
-    android:layout_marginLeft="16dp"
-    android:layout_marginRight="16dp"
+    android:layout_marginLeft="@dimen/widget_size_16"
+    android:layout_marginRight="@dimen/widget_size_16"
     android:orientation="vertical"
     app:layout_behavior="com.ue.recommend.widget.NBottomSheetBehavior"
     app:nBehavior_hideable="false"
-    app:nBehavior_peekHeight="100dp">
+    app:nBehavior_peekHeight="@dimen/widget_size_100">
 
     <TextView
         android:id="@+id/tvSheetTitle"
@@ -18,12 +18,12 @@
         android:layout_height="wrap_content"
         android:background="@drawable/bg_recommend_sheet_title"
         android:drawableLeft="@drawable/svg_recommend"
-        android:drawablePadding="10dp"
+        android:drawablePadding="@dimen/widget_size_10"
         android:gravity="center_vertical"
-        android:padding="15dp"
+        android:padding="@dimen/widget_size_15"
         android:text="@string/recommend_app"
         android:textColor="@color/col_cc000000"
-        android:textSize="15sp"/>
+        android:textSize="@dimen/font_size_17"/>
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -38,8 +38,8 @@
             android:clipToPadding="false"
             android:orientation="vertical"
             android:overScrollMode="never"
-            android:paddingBottom="10dp"
-            android:paddingTop="5dp"
+            android:paddingBottom="@dimen/widget_size_10"
+            android:paddingTop="@dimen/widget_size_5"
             android:scrollbars="none"
             app:layoutManager="android.support.v7.widget.LinearLayoutManager"/>
         <!--progress-->
@@ -63,7 +63,7 @@
     <ViewStub
         android:id="@+id/vsBannerContainer"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="@dimen/widget_size_60"
         android:inflatedId="@+id/vgBannerContainer"
         android:layout="@layout/layout_sheet_banner"/>
 </LinearLayout>

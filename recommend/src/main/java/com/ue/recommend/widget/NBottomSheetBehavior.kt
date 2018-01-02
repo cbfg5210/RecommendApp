@@ -354,7 +354,7 @@ class NBottomSheetBehavior<V : View> : CoordinatorLayout.Behavior<V> {
         if (mPeekHeightAuto) {
             if (peekHeightMin == 0) {
                 // TODO: 2017/11/29 replace
-                peekHeightMin = 64
+                peekHeightMin = parent.resources.getDimensionPixelSize(R.dimen.widget_size_64)
                 //mPeekHeightMin = parent.getResources().getDimensionPixelSize(
                 //      R.dimen.design_bottom_sheet_peek_height_min);
             }

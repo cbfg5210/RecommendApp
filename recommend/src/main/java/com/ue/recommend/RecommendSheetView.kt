@@ -105,8 +105,7 @@ class RecommendSheetView : CoordinatorLayout, View.OnClickListener {
     }
 
     override fun onClick(view: View) {
-        val viewId = view.id
-        if (viewId == R.id.tvSheetTitle) {
+        if (view.id == R.id.tvSheetTitle) {
             if (bottomSheetBehavior.state == NBottomSheetBehavior.STATE_COLLAPSED) {
                 bottomSheetBehavior.state = NBottomSheetBehavior.STATE_EXPANDED
             }
