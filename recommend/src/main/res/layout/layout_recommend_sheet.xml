@@ -4,13 +4,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/vgSheetContainer"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/widget_size_400"
+    android:layout_height="500dp"
     android:layout_marginLeft="@dimen/widget_size_16"
     android:layout_marginRight="@dimen/widget_size_16"
     android:orientation="vertical"
     app:layout_behavior="com.ue.recommend.widget.NBottomSheetBehavior"
     app:nBehavior_hideable="false"
-    app:nBehavior_peekHeight="@dimen/widget_size_100">
+    app:nBehavior_peekHeight="@dimen/widget_size_90">
 
     <TextView
         android:id="@+id/tvSheetTitle"
@@ -39,7 +39,6 @@
             android:orientation="vertical"
             android:overScrollMode="never"
             android:paddingBottom="@dimen/widget_size_10"
-            android:paddingTop="@dimen/widget_size_5"
             android:scrollbars="none"
             app:layoutManager="android.support.v7.widget.LinearLayoutManager"/>
         <!--progress-->

@@ -12,5 +12,6 @@
     <dimen name="widget_size_50">50dp</dimen>
     <dimen name="widget_size_64">64dp</dimen>
     <dimen name="widget_size_24">24dp</dimen>
-    <dimen name="widget_size_400">400dp</dimen>
+    <dimen name="widget_size_95">95dp</dimen>
+    <dimen name="widget_size_90">90dp</dimen>
 </resources>

@@ -59,8 +59,8 @@ class RecommendSheetView : CoordinatorLayout, View.OnClickListener {
     override fun onFinishInflate() {
         super.onFinishInflate()
 
+        tvSheetTitle.setOnClickListener(this)
         bottomSheetBehavior = NBottomSheetBehavior.from<ViewGroup>(vgSheetContainer)
-
         bottomSheetBehavior.setBottomSheetCallback(object : NBottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 if (newState == NBottomSheetBehavior.STATE_COLLAPSED) {
