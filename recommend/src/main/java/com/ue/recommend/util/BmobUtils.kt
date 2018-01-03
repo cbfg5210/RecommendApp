@@ -79,18 +79,18 @@ class BmobUtils private constructor() {
      * @return JSON格式结果
      */
     @Throws(IOException::class)
-    fun findBQL(BQL: String, value: String = STRING_EMPTY): String {
-        var BQL = BQL
+    fun findBQL(aBQL: String, value: String = STRING_EMPTY): String {
+        var BQL = aBQL
         if (!IS_INIT) {
             return "Unregistered"
         }
-        val result: String
+
         BQL = "${urlEncoder(BQL)}&values=[${urlEncoder(value)}]"
         val mURL = "https://api.bmob.cn/1/cloudQuery?bql=$BQL"
 
         val conn = getBmobConnection(URL(mURL), METHOD_GET)
         conn.connect()
-        result = getResultFromConnection(conn)
+        val result = getResultFromConnection(conn)
         conn.disconnect()
 
         return result
